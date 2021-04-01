@@ -1,0 +1,56 @@
+global_dir = "/data/cornucopia/ib255/shared_file_system/derivative_datasets/scene_coordinate_regression/mt_style/DATA/cued_jason/ds_combined_240/"
+
+images_dir = "images/"
+img = mpimg.imread(global_dir + images_dir + "DS_000_JDG_19_Teaching_Room_Manual_Pose_240p_0001_rendered.png")
+print(img.shape)
+plt.imshow(img)
+
+
+
+npz_dir = "meta2/"
+npz_data = np.load(global_dir + npz_dir + "DS_000_JDG_19_Teaching_Room_Manual_Pose_240p_0001_rendered.npz")
+print(npz_data['points_3d_world'].shape)
+
+
+plot = k3d.plot(name='points')
+plt_points = k3d.points(positions=npz_data['points_3d_world'], point_size=0.2)
+plot += plt_points
+plt_points.shader='3d'
+plot.display()
+
+
+
+def get_indices(width,height):
+    N = (height-1)*(width-1)
+    indices = np.zeros((2*N,3))
+#     indices[0] = [0,w,w+1]
+#     indices[N] = [0,1,w+1]
+#     indices[1] = [1,w+1,w+2]
+#     indices[N+1] = [1,2,w+2]
+#     indices[1] = [1,w+1,]
+
+    for h in range(height-1)
+        for w in range(width-1):
+            indices[width*h + w] = [width*h + w, width*(h+1) + w,  width*(h+1) + w +1]
+            indices[N + width*h + w] = [width*h + w, width*h + w + 1,  width*(h+1) + w +1]
+    
+
+
+from matplotlib.tri import Triangulation
+
+# N = npz_data['points_3d_world'].shape[0]
+# M = npz_data['points_3d_world'].shape[1]
+# indices = (np.stack([
+#     np.arange(N*N) + 0, np.arange(N*N) + N, np.arange(N*N) + N + 1,
+#     np.arange(N*N) + 0, np.arange(N*N) + N + 1, np.arange(N*N) + 1
+# ]).T % (N * N)).astype(np.uint32)
+
+plot = k3d.plot(name='mesh')
+plt_mesh = k3d.mesh(npz_data['points_3d_world'], indices
+#                    color_map = k3d.colormaps.basic_color_maps.Jet,
+#                    attribute=z,
+#                    color_range = [-1.1,2.01]
+                   )
+plot += plt_mesh
+# plt_mesh.shader='3d'
+plot.display()

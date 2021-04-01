@@ -23,17 +23,11 @@ python -m ipykernel install --user --name "localication" --display-name "Python 
 
 
 
-coord_data_dir = "/data/cornucopia/ib255/derivative_datasets/cued_scene_coordinate_regression/data_from_jason/DS_003_JDB-Full/coordinates/"
-coord_npz = "0036_rendered.png_config.npz"
-# 0036_rendered.png_config.npz
-# 0038_rendered.png_config_world.ply
-npz_data = np.load(coord_data_dir + coord_npz)
 
 
-npz_data.files
 
-p_3d_world = npz_data['points_3d_world']
-p_3d_camera = npz_data["points_3d_camera"]
+
+
 
 
 points_camera = p_3d_camera.reshape(-1, p_3d_camera.shape[-1])
