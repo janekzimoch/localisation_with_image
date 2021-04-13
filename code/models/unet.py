@@ -1,6 +1,15 @@
 from tensorflow import keras
 from tensorflow.keras import layers
 from tensorflow.keras.models import Model
+from models.encoders.vgg_encoder import *
+
+def vgg_unet(input_height=224, input_width=224):
+
+    model = unet(vgg_encoder, input_height=input_height, input_width=input_width)
+    model.model_name = "vgg_unet"
+    
+    return model
+
 
 def unet(encoder, l1_skip_conn=True, input_height=224,
           input_width=224):

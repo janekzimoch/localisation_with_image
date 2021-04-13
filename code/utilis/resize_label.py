@@ -1,5 +1,9 @@
 import numpy as np
-
+"""
+FOLLOWING 4METHODS ARE DEPRECIATED
+We updated these with openCV Nearest neighboor downsampling (12/04/2021)
+TO BE DELATED SOON
+"""
 def get_row_compressor(old_dimension, new_dimension):
     dim_compressor = np.zeros((new_dimension, old_dimension))
     bin_size = float(old_dimension) / new_dimension
@@ -45,4 +49,6 @@ def resize_coordinates(label, new_dim=(224,224)):
     label_res = np.stack(resize_by_dim, axis=-1)
 
     return label_res
+
+
 

@@ -26,9 +26,5 @@ python -m ipykernel install --user --name "localication" --display-name "Python 
 
 
 
-
-
-
-
-points_camera = p_3d_camera.reshape(-1, p_3d_camera.shape[-1])
-points_world = p_3d_world.reshape(-1, p_3d_world.shape[-1])
+TO KILL PROCESSES ON GPU
+nvidia-smi | grep 'python' | awk '{ print $3 }' | xargs -n1 kill -9
