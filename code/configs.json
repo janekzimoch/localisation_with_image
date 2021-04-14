@@ -1,0 +1,40 @@
+{
+    "callbacks": {
+        "garbage_cleaner": true,
+        "model_checkpoint": true,
+        "tensorboard": true,
+        "train_visualisation": true,
+        "val_visualisation": true,
+        "vis_frequency": 10
+    },
+    "data_generator": {
+        "batch_size": 4,
+        "dim": [
+            256,
+            512
+        ],
+        "n_channels": 3,
+        "num_crops": 8,
+        "shuffle": true
+    },
+    "data_partition": {
+        "data_dir": "/data/cornucopia/jz522/localisation_project/DS_003_JDB-Full/coordinates_256_512/",
+        "dataset_size": 370,
+        "val_split": 0.05
+    },
+    "experiment_info": {
+        "experiment_dir": "/home/mlmi-2020/jz522/localisation_from_image_project/experiments/",
+        "experiment_name": "test",
+        "multiple_GPU": true
+    },
+    "fit_model": {
+        "epochs": 2,
+        "verbose": 1
+    },
+    "model_configs": {
+        "learning_rate": 0.0001
+    },
+    "setup_model": {
+        "loss": "mse"
+    }
+}

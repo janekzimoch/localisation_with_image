@@ -22,11 +22,12 @@ class Visualise_learning(keras.callbacks.Callback):
     1) Current visualisation is very 2D. Would be nice to improve its meanigfulness.
     2) See if you can display figures online (integrate with TensorBoard?)    
     """
-    def __init__(self, train_image, ground_truth, frequency, exp_name):
+    def __init__(self, train_image, ground_truth, frequency, exp_name, train_val_setting):
         super(Visualise_learning, self).__init__()
         self.train_image = train_image
         self.ground_truth = ground_truth
         self.frequency = frequency
+        self.train_val_setting = train_val_setting
         self.save_dir = '/home/mlmi-2020/jz522/localisation_from_image_project/experiments/' + exp_name + "/train_visualisations/"
         
         if not os.path.exists(self.save_dir):
@@ -35,7 +36,7 @@ class Visualise_learning(keras.callbacks.Callback):
     
 
     def plot_simple_3D_point_cloud(self, file_name, ground_truth, pred):
-        fig = plt.figure(figsize=(20,20))
+        fig = plt.figure(figsize=(12,12))
         ax = fig.add_subplot(111, projection='3d')
 
         gt_xyz = ground_truth.reshape(-1, ground_truth.shape[-1])[::20]
@@ -44,12 +45,13 @@ class Visualise_learning(keras.callbacks.Callback):
         pred_xyz = pred.reshape(-1, pred.shape[-1])[::20]
         ax.scatter(pred_xyz[:,0], pred_xyz[:,1], pred_xyz[:,2], c='b', marker='o')
         
+        plt.show()
         fig.savefig(self.save_dir + file_name)
 
 
         
     def plot_colored_3D_point_cloud(self, file_name, ground_truth, pred):
-        fig = plt.figure(figsize=(20,20))
+        fig = plt.figure(figsize=(12,12))
         ax = fig.add_subplot(111, projection='3d')
         point_subsample=10
 
@@ -71,6 +73,8 @@ class Visualise_learning(keras.callbacks.Callback):
             indexes = np.argwhere(binarised==ind)
             ax.scatter(pred_xyz[indexes,0], pred_xyz[indexes,1], pred_xyz[indexes,2], c=color, marker='o', label=label) #RGB
         fig.legend(fontsize=20, loc='upper right', bbox_to_anchor=(0.9, 0.7))
+
+        plt.show()
         fig.savefig(self.save_dir + file_name)
 
 
@@ -83,7 +87,7 @@ class Visualise_learning(keras.callbacks.Callback):
         bins = np.array([0.1,1,3])
         binarised = np.digitize(diff_binary, bins, right=False)
 
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10,20))
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16,8))
         
         # LEFT PLOT - shows pixelwise error
         im1 = ax1.imshow(diff_binary, cmap='Greys', vmin=0, vmax=6)
@@ -100,7 +104,7 @@ class Visualise_learning(keras.callbacks.Callback):
         cbar2 = fig.colorbar(im2, cax=cax2, ticks=[0,1,2,3])
         ax2.set_title('Pixelwise residual error - buckets')
         cbar2.ax.set_yticklabels(['< 0.1', '< 1', '< 3', '3+']) 
-        
+        plt.show()
         fig.savefig(self.save_dir + file_name)
 
 
@@ -130,16 +134,23 @@ class Visualise_learning(keras.callbacks.Callback):
         if(epoch%self.frequency == 0):
             train_x = np.expand_dims(self.train_image, axis=0)
             pred_coordinates = self.model.predict(train_x)
+
+            if self.train_val_setting == "val":
+                print()
+                print("#############   VALIDATION   #############")
+            elif self.train_val_setting == "train":
+                print()
+                print("#############     TRAIN     #############")
             
             # plot 3D point convergence
-            simple_vis_file = "simple_vis_" + str(epoch) 
+            simple_vis_file = self.train_val_setting + "simple_vis_" + str(epoch) 
             # self.plot_simple_3D_point_cloud(simple_vis_file, self.ground_truth, pred_coordinates)
             self.plot_colored_3D_point_cloud(simple_vis_file, self.ground_truth, pred_coordinates)
 
             # plot pixel wise accuracy
-            pixelwise_acc_file = "pixelwise_accuracy_" + str(epoch) 
+            pixelwise_acc_file = self.train_val_setting + "pixelwise_acc_" + str(epoch) 
             self.plot_pixelwise_coordinate_accuracy(pixelwise_acc_file, self.ground_truth, pred_coordinates)
 
             # save .ply file for visualisation
-            ply_file = "scene_coordinates_" + str(epoch) 
+            ply_file = self.train_val_setting + "scene_coordinates_" + str(epoch) 
             self.writePlyFile(ply_file, pred_coordinates, self.train_image)
