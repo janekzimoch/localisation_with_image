@@ -1,18 +1,28 @@
-import json
 from utilis.experiment_utilis import *
 
 
-
-
 def run_experiment(json_configs_file):
+    
     # get experiment configs
-    configs_file = open(json_configs_file)
-    configs = json.load(configs_file)
-    configs_file.close()
+    configs = get_configs(json_configs_file)
+    experiment_info = configs['experiment_info']
 
+    # decide on multi GPU or single GPU
+    if experiment_info['multiple_GPU'] == True:
+        strategy = tf.distribute.MirroredStrategy(experiment_info['GPUs'])
+        print('Number of devices: {}'.format(strategy.num_replicas_in_sync))
+
+        with strategy.scope():
+            run_setup(configs)
+    else:
+        run_setup(configs)
+
+
+def run_setup(configs):
+    
     # setup experiment folder
     print("Setting up Experiment folder ...")
-    experiment_name = setup_experiment_folder(**configs['experiment_info'])
+    experiment_name, experiment_full_name = setup_experiment_folder(**configs['experiment_info'])
     print(experiment_name)
     configs['experiment_info']['experiment_name'] = experiment_name
 
@@ -35,8 +45,9 @@ def run_experiment(json_configs_file):
 
     # train model
     print("Training ...")
-    model.fit(x=train_generator, validation_data=validation_generator, callbacks=callbacks, **configs['fit_model']) 
+    history = model.fit(x=train_generator, validation_data=validation_generator, callbacks=callbacks, **configs['fit_model']) 
 
-
+    # save history
+    save_history(experiment_full_name, history.history)
 
 

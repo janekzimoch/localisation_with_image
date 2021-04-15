@@ -28,7 +28,7 @@ class Visualise_learning(keras.callbacks.Callback):
         self.ground_truth = ground_truth
         self.frequency = frequency
         self.train_val_setting = train_val_setting
-        self.save_dir = '/home/mlmi-2020/jz522/localisation_from_image_project/experiments/' + exp_name + "/train_visualisations/"
+        self.save_dir = '/home/mlmi-2020/jz522/localisation_from_image_project/experiments/' + exp_name + "/train_visualisations/" + train_val_setting
         
         if not os.path.exists(self.save_dir):
             os.makedirs(self.save_dir)
@@ -90,6 +90,7 @@ class Visualise_learning(keras.callbacks.Callback):
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16,8))
         
         # LEFT PLOT - shows pixelwise error
+        diff_binary[diff_binary > 6] = 6
         im1 = ax1.imshow(diff_binary, cmap='Greys', vmin=0, vmax=6)
         divider = make_axes_locatable(ax1)
         cax1 = divider.append_axes('right', size='5%', pad=0.1)
@@ -143,14 +144,14 @@ class Visualise_learning(keras.callbacks.Callback):
                 print("#############     TRAIN     #############")
             
             # plot 3D point convergence
-            simple_vis_file = self.train_val_setting + "simple_vis_" + str(epoch) 
+            simple_vis_file = "simple_vis_" + str(epoch) 
             # self.plot_simple_3D_point_cloud(simple_vis_file, self.ground_truth, pred_coordinates)
             self.plot_colored_3D_point_cloud(simple_vis_file, self.ground_truth, pred_coordinates)
 
             # plot pixel wise accuracy
-            pixelwise_acc_file = self.train_val_setting + "pixelwise_acc_" + str(epoch) 
+            pixelwise_acc_file = "pixelwise_acc_" + str(epoch) 
             self.plot_pixelwise_coordinate_accuracy(pixelwise_acc_file, self.ground_truth, pred_coordinates)
 
             # save .ply file for visualisation
-            ply_file = self.train_val_setting + "scene_coordinates_" + str(epoch) 
+            ply_file = "scene_coordinates_" + str(epoch) 
             self.writePlyFile(ply_file, pred_coordinates, self.train_image)

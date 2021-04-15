@@ -2,14 +2,15 @@ import json
 
 configs = {
     'experiment_info': {
-        'experiment_name': "test",
+        'experiment_name': "full_run",
         'experiment_dir': '/home/mlmi-2020/jz522/localisation_from_image_project/experiments/',
-        'multiple_GPU': True
+        'multiple_GPU': True,
+        'GPUs': ['/device:GPU:0', '/device:GPU:3', '/device:GPU:4', '/device:GPU:2', '/device:GPU:5']
     },
     'data_partition': {
         'dataset_size': 370,
         'data_dir': "/data/cornucopia/jz522/localisation_project/DS_003_JDB-Full/coordinates_256_512/",
-        'val_split': 0.05
+        'val_split': 0.1
     },
 
     'callbacks': {
@@ -18,11 +19,11 @@ configs = {
         'tensorboard': True,
         'model_checkpoint': True,
         'garbage_cleaner': True,
-
+        "vis_frequency": 25
     },
 
     'data_generator': {
-        "batch_size": 4,
+        "batch_size": 10,
         "dim": (256,512),
         "n_channels": 3,
         "shuffle": True,
@@ -38,7 +39,7 @@ configs = {
     },
 
     'fit_model': {
-        'epochs': 2,
+        'epochs': 1000,
         'verbose': 1,
     }
 }

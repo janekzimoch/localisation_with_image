@@ -9,13 +9,13 @@ source /home/mlmi-2020/jz522/localisation_from_image_project/envs/loc/bin/activa
 
 GIT COMMANDS:
 git add -A
-git commit -m "..."
+git commit -m "major changes - added: config, experiment, data gen"
 git push -u origin master
 
 git diff --stat | tail -n1
 git diff --name-only --cached
 git reset   # deletes all staged file in the most recent "git add"
-
+git reset HEAD^
 
 # if you want to exclude some directory add this to .gitignore (relative path): <dir_name>/ 
 

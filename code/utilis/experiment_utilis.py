@@ -4,6 +4,8 @@ if not os.getcwd() in sys.path:
 
 import numpy as np
 import datetime
+import json
+from shutil import copyfile, copytree
 
 from tensorflow import keras
 
@@ -12,6 +14,13 @@ from utilis.callbacks import *
 from models.unet import *
 from models.encoders.vgg_encoder import *
 
+
+def get_configs(json_configs_file):
+    configs_file = open(json_configs_file)
+    configs = json.load(configs_file)
+    configs_file.close()
+
+    return configs
 
 
 
@@ -28,13 +37,17 @@ def setup_experiment_folder(**kwargs):
     if not os.path.exists(experiment_full_name):
         os.makedirs(experiment_full_name)
 
-    """ TODO: 
-    1. Create directories: visualisation, modelcheckpoint, train_history_logs
-    2. Copy over configs.json file
-    3. copy code (need to decide how much code to copy. To start with just unet model and encoder could be fine)
-    """
+    # copy configs.json
+    if not os.path.exists(experiment_full_name + "/code"):
+        os.makedirs(experiment_full_name + "/code")
+    copyfile("configs.json", experiment_full_name+"/code/configs.json")
 
-    return experiment_name
+    # copy code
+    copyfile("run_experiment.py", experiment_full_name + "/code/run_experiment.py")
+    copytree('models', experiment_full_name + "/code" + "/models")
+    copytree('utilis', experiment_full_name + "/code" + "/utilis")
+
+    return experiment_name, experiment_full_name
 
 
 def get_data_generator(data_partition, generator_configs):
@@ -96,7 +109,8 @@ def get_callbacks(train_gen, val_gen,**kwargs):
             monitor='val_loss', 
             verbose=0, 
             save_best_only=True,
-            mode='auto')
+            mode='auto',
+            save_freq=10)
         callbacks.append(modelCheckpoint_callback)
         
     if kwargs['garbage_cleaner'] == True:
@@ -111,3 +125,10 @@ def setup_model(compile_configs, **kwargs):
     unet_model.compile(optimizer=keras.optimizers.Adam(kwargs['learning_rate']), **compile_configs)
 
     return unet_model
+
+
+def save_history(experiment_full_name, history):
+    hist_json_file = experiment_full_name + '/train_history.json' 
+
+    with open(hist_json_file, 'w') as history_file:
+        json.dump(history, history_file, sort_keys=True, indent=4)
