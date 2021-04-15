@@ -9,7 +9,7 @@ source /home/mlmi-2020/jz522/localisation_from_image_project/envs/loc/bin/activa
 
 GIT COMMANDS:
 git add -A
-git commit -m "major changes - added: config, experiment, data gen"
+git commit -m "finalised scene regression model pipeline"
 git push -u origin master
 
 git diff --stat | tail -n1

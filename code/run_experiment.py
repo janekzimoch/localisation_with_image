@@ -41,7 +41,7 @@ def run_setup(configs):
 
     # setup model
     print("Setting up model ...")
-    model = setup_model(configs['setup_model'], **configs['model_configs'])
+    model = setup_model(configs['compile_configs'], **configs['model_configs'])
 
     # train model
     print("Training ...")

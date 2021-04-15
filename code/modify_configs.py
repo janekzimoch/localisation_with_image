@@ -5,7 +5,7 @@ configs = {
         'experiment_name': "full_run",
         'experiment_dir': '/home/mlmi-2020/jz522/localisation_from_image_project/experiments/',
         'multiple_GPU': True,
-        'GPUs': ['/device:GPU:0', '/device:GPU:3', '/device:GPU:4', '/device:GPU:2', '/device:GPU:5']
+        'GPUs': ['/device:GPU:0', '/device:GPU:3', '/device:GPU:2', '/device:GPU:4', '/device:GPU:5']
     },
     'data_partition': {
         'dataset_size': 370,
@@ -30,12 +30,14 @@ configs = {
         "num_crops": 8,
     },
 
-    'setup_model': {
-        'loss': 'mse', 
+    'compile_configs': {
+        'loss': 'mse'
     },
 
     'model_configs': {
-        'learning_rate': 0.0001
+        'learning_rate': 0.0001,
+        'run_from_checkpoint': True,
+        'checkpoint_dir': "/home/mlmi-2020/jz522/localisation_from_image_project/experiments/2021-04-15/full_run_2021-04-15_10:23:45/model_checkpoint"
     },
 
     'fit_model': {

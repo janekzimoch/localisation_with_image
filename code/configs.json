@@ -7,6 +7,9 @@
         "val_visualisation": true,
         "vis_frequency": 25
     },
+    "compile_configs": {
+        "loss": "mse"
+    },
     "data_generator": {
         "batch_size": 10,
         "dim": [
@@ -26,8 +29,8 @@
         "GPUs": [
             "/device:GPU:0",
             "/device:GPU:3",
-            "/device:GPU:4",
             "/device:GPU:2",
+            "/device:GPU:4",
             "/device:GPU:5"
         ],
         "experiment_dir": "/home/mlmi-2020/jz522/localisation_from_image_project/experiments/",
@@ -39,9 +42,8 @@
         "verbose": 1
     },
     "model_configs": {
-        "learning_rate": 0.0001
-    },
-    "setup_model": {
-        "loss": "mse"
+        "checkpoint_dir": "/home/mlmi-2020/jz522/localisation_from_image_project/experiments/2021-04-15/full_run_2021-04-15_10:23:45/model_checkpoint",
+        "learning_rate": 0.0001,
+        "run_from_checkpoint": true
     }
 }
