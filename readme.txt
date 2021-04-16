@@ -9,7 +9,7 @@ source /home/mlmi-2020/jz522/localisation_from_image_project/envs/loc/bin/activa
 
 GIT COMMANDS:
 git add -A
-git commit -m "finalised scene regression model pipeline"
+git commit -m "finalised scene regression model pipeline 2"
 git push -u origin master
 
 git diff --stat | tail -n1
@@ -23,8 +23,22 @@ python -m ipykernel install --user --name "localication" --display-name "Python 
 
 
 
-
+tensorboard --logdir experiments/logs
 
 
 TO KILL PROCESSES ON GPU
 nvidia-smi | grep 'python' | awk '{ print $3 }' | xargs -n1 kill -9
+
+
+git config --global user.email "janekzimoch@gmail.com"
+git clone https://gitlab.com/libeigen/eigen.git envs/eigen
+
+mkdir build && cd build && cmake .. -EIGEN_INCLUDE_DIR:STRING="eigen" && make
+
+cmake ../opengv 
+  -DEIGEN_INCLUDE_DIR="/home/mlmi-2020/jz522/localisation_from_image_project/envs/eigen"
+  -DBUILD_TESTS=ON
+  -DCMAKE_INSTALL_PREFIX="/home/mlmi-2020/jz522/localisation_from_image_project/envs"
+  -BUILD_PYTHON=ON
+make
+make install
