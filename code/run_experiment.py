@@ -28,7 +28,7 @@ def run_setup(configs):
 
     # get data IDs
     print("Partitionin gdataset IDs ...")
-    data_partition = get_data(**configs['data_partition'])
+    data_partition = get_data(experiment_full_name, **configs['data_partition'])
 
     # setup generator
     print("Setting up data Generators ...")

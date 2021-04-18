@@ -57,7 +57,7 @@ def get_data_generator(data_partition, generator_configs):
     return training_generator, validation_generator
 
 
-def get_data(dataset_size=370,
+def get_data(experiment_full_name, dataset_size=370,
              data_dir= "/data/cornucopia/jz522/localisation_project/DS_003_JDB-Full/coordinates_256_512/",
              val_split=0.05):
   
@@ -69,12 +69,15 @@ def get_data(dataset_size=370,
     split_index = int(val_split*dataset_size)
 
     for ind in indexes[split_index:]:
-        coord_npz = f"{ind:03}_rendered.png_config.npz"
+        coord_npz = f"{ind:04}_rendered.png_config.npz"
         data_partition['train'].append(data_dir + coord_npz)
 
     for ind in indexes[:split_index]:
-        coord_npz = f"{ind:03}_rendered.png_config.npz"
+        coord_npz = f"{ind:04}_rendered.png_config.npz"
         data_partition['validation'].append(data_dir + coord_npz)
+
+    with open(experiment_full_name + 'data_partition.json', 'w') as json_file:
+        json.dump(data_partition, json_file, sort_keys=True, indent=4)
     
     return data_partition
 
