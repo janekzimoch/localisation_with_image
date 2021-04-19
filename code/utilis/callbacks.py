@@ -136,10 +136,10 @@ class Visualise_learning(keras.callbacks.Callback):
             train_x = np.expand_dims(self.train_image, axis=0)
             pred_coordinates = self.model.predict(train_x)
 
-            if self.train_val_setting == "val":
+            if self.train_val_setting == "val/":
                 print()
                 print("#############   VALIDATION   #############")
-            elif self.train_val_setting == "train":
+            elif self.train_val_setting == "train/":
                 print()
                 print("#############     TRAIN     #############")
             

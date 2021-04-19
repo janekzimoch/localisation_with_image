@@ -31,7 +31,7 @@ class DataGenerator(keras.utils.Sequence):
             npz_data = np.load(ID)
             
             images[i] = npz_data['image_colors'].astype(int)          
-            labels[i] = npz_data['points_3d_camera']
+            labels[i] = npz_data['points_3d_world']
 
         return images, labels
             
@@ -47,7 +47,7 @@ class DataGenerator(keras.utils.Sequence):
             npz_data = np.load(ID)
 
             images[i,:,:,:] = cv2.resize(npz_data['image_colors'], self.dim[::-1], interpolation = cv2.INTER_CUBIC)
-            labels[i,:,:,:] = cv2.resize(np.array(npz_data['points_3d_camera'], dtype=np.float32), self.dim[::-1], interpolation = cv2.INTER_NEAREST)
+            labels[i,:,:,:] = cv2.resize(np.array(npz_data['points_3d_world'], dtype=np.float32), self.dim[::-1], interpolation = cv2.INTER_NEAREST)
 
         return images, labels
 

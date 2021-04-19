@@ -59,24 +59,35 @@ def get_data_generator(data_partition, generator_configs):
 
 def get_data(experiment_full_name, dataset_size=370,
              data_dir= "/data/cornucopia/jz522/localisation_project/DS_003_JDB-Full/coordinates_256_512/",
-             val_split=0.05):
+             val_split=0.05,
+             **kwargs):
   
-    data_partition = {'train': [],
-                     'validation': []}
+    if kwargs['run_from_checkpoint'] == True:
+        # get data_partition file from the previous checkpoint's experiment directory
+        data_partition_dir = "/".join(kwargs['checkpoint_dir'].split('/')[:-1]) + '/data_partition.json'
+        data_partition_file = open(data_partition_dir)
+        data_partition = json.load(data_partition_file)
+        data_partition_file.close()
 
-    indexes = np.arange(1,dataset_size + 1)
-    np.random.shuffle(indexes)
-    split_index = int(val_split*dataset_size)
+    else:
+        data_partition = {'train': [],
+                        'validation': []}
 
-    for ind in indexes[split_index:]:
-        coord_npz = f"{ind:04}_rendered.png_config.npz"
-        data_partition['train'].append(data_dir + coord_npz)
+        indexes = np.arange(1,dataset_size + 1)
+        np.random.shuffle(indexes)
+        split_index = int(val_split*dataset_size)
 
-    for ind in indexes[:split_index]:
-        coord_npz = f"{ind:04}_rendered.png_config.npz"
-        data_partition['validation'].append(data_dir + coord_npz)
+        for ind in indexes[split_index:]:
+            coord_npz = f"{ind:04}_rendered.png_config.npz"
+            data_partition['train'].append(data_dir + coord_npz)
 
-    with open(experiment_full_name + 'data_partition.json', 'w') as json_file:
+        for ind in indexes[:split_index]:
+            coord_npz = f"{ind:04}_rendered.png_config.npz"
+            data_partition['validation'].append(data_dir + coord_npz)
+
+
+    # save data_partition file to your experiment directory
+    with open(experiment_full_name + '/data_partition.json', 'w') as json_file:
         json.dump(data_partition, json_file, sort_keys=True, indent=4)
     
     return data_partition

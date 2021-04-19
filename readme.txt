@@ -9,7 +9,7 @@ source /home/mlmi-2020/jz522/localisation_from_image_project/envs/loc/bin/activa
 
 GIT COMMANDS:
 git add -A
-git commit -m "installed openGV"
+git commit -m "added baseline pose estimation code"
 git push -u origin master
 
 git diff --stat | tail -n1
@@ -51,3 +51,6 @@ make install
 
 
 
+
+
+ cp /data/cornucopia/ib255/derivative_datasets/cued_scene_coordinate_regression/data_from_jason/DS_003_JDB-Full/coordinates/0001_rendered.png_config_world.ply ./0001_rendered.png_config_world.ply

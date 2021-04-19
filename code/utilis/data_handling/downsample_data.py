@@ -13,7 +13,7 @@ if __name__ == '__main__':
         os.makedirs(dir_to_save)
 
 
-    for ind in tqdm(range(350,370)):
+    for ind in tqdm(range(370,371)):
         coord_npz =  f"{ind:04}_rendered.png_config.npz"
         npz_data = np.load(coord_data_dir + coord_npz)
 
