@@ -3,11 +3,14 @@ if not os.getcwd() in sys.path:
     sys.path.append(os.getcwd())
 
 import numpy as np
+import matplotlib.pyplot as plt
 import datetime
 import json
 from shutil import copyfile, copytree
 
+import tensorflow as tf
 from tensorflow import keras
+
 
 from utilis.data_generator import *
 from utilis.callbacks import *
@@ -57,9 +60,9 @@ def get_data_generator(data_partition, generator_configs):
     return training_generator, validation_generator
 
 
-def get_data(experiment_full_name, dataset_size=370,
-             data_dir= "/data/cornucopia/jz522/localisation_project/DS_003_JDB-Full/coordinates_256_512/",
-             val_split=0.05,
+def get_data(experiment_full_name, dataset_size,
+             data_dir,
+             val_split,
              **kwargs):
   
     if kwargs['run_from_checkpoint'] == True:
@@ -96,6 +99,11 @@ def get_data(experiment_full_name, dataset_size=370,
 
 def get_callbacks(train_gen, val_gen,**kwargs):
     callbacks = []
+
+    if kwargs['save_input_images'] == True:
+        images, labels = train_gen.__getitem__(0)
+        save_sample_input = Save_sample_input(images, labels, kwargs['experiment_name'])
+        callbacks.append(save_sample_input)
 
     if kwargs['train_visualisation'] == True:
         images, labels = train_gen.__getitem__(0)
@@ -134,14 +142,32 @@ def get_callbacks(train_gen, val_gen,**kwargs):
     return callbacks
 
 
+def masked_MSE(y_true, y_pred):
+    mask = y_true[:,:,:,3]
+    y_true = y_true[:,:,:,:3]
+
+    mask_expanded = tf.stack([mask,mask,mask], axis=-1)
+
+    y_pred = tf.math.multiply(y_pred, mask_expanded)
+    y_true = tf.math.multiply(y_true, mask_expanded)
+
+
+    squared_difference = tf.square(y_true - y_pred)
+    # loss = tf.reduce_mean(squared_difference, axis=-1)
+    loss = tf.reduce_mean(squared_difference)
+
+    return loss
+
+
 
 def setup_model(compile_configs, **kwargs):
     
     if not kwargs['run_from_checkpoint']:
         unet_model = vgg_unet()
-        unet_model.compile(optimizer=keras.optimizers.Adam(kwargs['learning_rate']), **compile_configs)
+        unet_model.compile(optimizer=keras.optimizers.Adam(kwargs['learning_rate']), loss=masked_MSE)
     else:
-        unet_model = keras.models.load_model(kwargs['checkpoint_dir'])
+        unet_model = keras.models.load_model(kwargs['checkpoint_dir'], compile=False)
+        unet_model.compile(optimizer=keras.optimizers.Adam(kwargs['learning_rate']), loss=masked_MSE)
     return unet_model
 
 

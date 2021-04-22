@@ -13,6 +13,42 @@ class RemoveGarbageCallback(keras.callbacks.Callback):
         gc.collect()
 
 
+class Save_sample_input(keras.callbacks.Callback):
+    def __init__(self, images, labels, exp_name):
+        super(Save_sample_input, self).__init__()
+        self.images = images
+        self.ground_truth = labels[:,:,:,:3]
+        self.mask = labels[:,:,:,3]
+        self.save_dir = '/home/mlmi-2020/jz522/localisation_from_image_project/experiments/' + exp_name + "/sample_input/"
+        
+        if not os.path.exists(self.save_dir):
+            os.makedirs(self.save_dir)
+
+    def on_train_begin(self, logs=None):
+        i = 0
+        for image, mask, gt in zip(self.images[:10], self.mask[:10], self.ground_truth[:10]):
+            fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(16,6))
+            
+            # plot input image
+            im1 = ax1.imshow(image)
+            ax1.set_title('Croped input image')
+
+            # plot mask
+            im2 = ax2.imshow(mask, cmap='Greys')
+            ax2.set_title('Mask applied to pred')
+
+            # plot 3d coords
+            im3 = ax3.imshow(np.linalg.norm(gt, axis=-1), cmap='Greys')
+            ax3.set_title('Ground truth - depth')
+            
+            file_name = "input_visualisation_" + str(i)
+            fig.savefig(self.save_dir + file_name, facecolor='w')
+            plt.close()
+            i += 1
+
+        
+
+
 class Visualise_learning(keras.callbacks.Callback):
     """
     Visualises fit of predicted 3D coords for a signle image passed (train_image)
@@ -25,7 +61,8 @@ class Visualise_learning(keras.callbacks.Callback):
     def __init__(self, train_image, ground_truth, frequency, exp_name, train_val_setting):
         super(Visualise_learning, self).__init__()
         self.train_image = train_image
-        self.ground_truth = ground_truth
+        self.ground_truth = ground_truth[:,:,:3]
+        self.mask = ground_truth[:,:,3]
         self.frequency = frequency
         self.train_val_setting = train_val_setting
         self.save_dir = '/home/mlmi-2020/jz522/localisation_from_image_project/experiments/' + exp_name + "/train_visualisations/" + train_val_setting
@@ -50,14 +87,15 @@ class Visualise_learning(keras.callbacks.Callback):
 
 
         
-    def plot_colored_3D_point_cloud(self, file_name, ground_truth, pred):
+    def plot_colored_3D_point_cloud(self, file_name, ground_truth, pred, mask):
         fig = plt.figure(figsize=(12,12))
         ax = fig.add_subplot(111, projection='3d')
         point_subsample=10
 
-
-        gt_xyz = ground_truth.reshape(-1, ground_truth.shape[-1])[::point_subsample]
-        ax.scatter(gt_xyz[:,0], gt_xyz[:,1], gt_xyz[:,2], c='teal', marker='o', label='ground-truth')
+        gt_xyz = ground_truth[mask[0]]
+        gt_xyz = gt_xyz.reshape(-1, ground_truth.shape[-1])
+        gt_xyz = gt_xyz[::point_subsample]
+        ax.scatter(gt_xyz[:,0], gt_xyz[:,1], gt_xyz[:,2], c='aqua', alpha=0.5, marker='o', label='ground-truth')
 
         diff = np.abs(ground_truth - pred)
         diff_binary = np.mean(diff, axis=-1)[0]
@@ -96,7 +134,7 @@ class Visualise_learning(keras.callbacks.Callback):
         cax1 = divider.append_axes('right', size='5%', pad=0.1)
         cbar1 = fig.colorbar(im1, cax=cax1)
         ax1.set_title('Pixelwise residual error [gt - pred]')
-        cbar1.ax.set_yticklabels(['0','1','2','3','4','5','6+']) 
+        cbar1.ax.set_yticklabels(['Masked / 0','1','2','3','4','5','6+']) 
 
         # RIGHT PLOT - projection of 3D scatter plot
         im2 = ax2.imshow(binarised, cmap=plt.cm.get_cmap('RdYlGn_r', 4), vmin=-0.5, vmax=3.5)
@@ -110,7 +148,13 @@ class Visualise_learning(keras.callbacks.Callback):
 
 
         
-    def writePlyFile(self, file_name, vertices, colors):
+    def writePlyFile(self, file_name, vertices, colors, mask):
+
+        # remove 3D points which should be masked
+        vertices = vertices[mask]
+        colors = colors[mask[0]]
+
+        # write
         ply_header = '''ply
                     format ascii 1.0
                     element vertex %(vert_num)d
@@ -131,10 +175,14 @@ class Visualise_learning(keras.callbacks.Callback):
 
 
             
-    def on_epoch_end(self, epoch, logs=None):
+    def on_epoch_begin(self, epoch, logs=None):
         if(epoch%self.frequency == 0):
             train_x = np.expand_dims(self.train_image, axis=0)
+            mask = np.expand_dims(self.mask, axis=0)
+            mask = np.stack((mask,mask,mask), axis=-1)
+
             pred_coordinates = self.model.predict(train_x)
+            pred_coordinates = pred_coordinates * mask
 
             if self.train_val_setting == "val/":
                 print()
@@ -146,7 +194,7 @@ class Visualise_learning(keras.callbacks.Callback):
             # plot 3D point convergence
             simple_vis_file = "simple_vis_" + str(epoch) 
             # self.plot_simple_3D_point_cloud(simple_vis_file, self.ground_truth, pred_coordinates)
-            self.plot_colored_3D_point_cloud(simple_vis_file, self.ground_truth, pred_coordinates)
+            self.plot_colored_3D_point_cloud(simple_vis_file, self.ground_truth, pred_coordinates, mask.astype(bool))
 
             # plot pixel wise accuracy
             pixelwise_acc_file = "pixelwise_acc_" + str(epoch) 
@@ -154,4 +202,4 @@ class Visualise_learning(keras.callbacks.Callback):
 
             # save .ply file for visualisation
             ply_file = "scene_coordinates_" + str(epoch) 
-            self.writePlyFile(ply_file, pred_coordinates, self.train_image)
+            self.writePlyFile(ply_file, pred_coordinates, self.train_image, mask.astype(bool))

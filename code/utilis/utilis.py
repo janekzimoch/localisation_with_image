@@ -27,7 +27,7 @@ def writePlyFile(file_dir, file_name, vertices, colors):
         np.savetxt(f, vertices, '%f %f %f %d %d %d')
 
 
-def crop_image(image, coords, bearing, orig_dim, start_row=None, start_col=None):
+def crop_image(image, coords, bearing, mask, orig_dim, start_row=None, start_col=None):
         
     # pick the start cordinates of croped images
     if start_row == None:
@@ -42,6 +42,7 @@ def crop_image(image, coords, bearing, orig_dim, start_row=None, start_col=None)
         wraped_image = image[start_row:start_row+224, :dif,:]
         wraped_coords = coords[start_row:start_row+224, :dif,:]
         wraped_bearing = bearing[start_row:start_row+224, :dif,:]
+        wraped_mask = mask[start_row:start_row+224, :dif]
         
         croped_image = np.concatenate(
             (image[start_row:start_row+224, start_col:start_col+224,:], wraped_image), axis=1)
@@ -49,10 +50,13 @@ def crop_image(image, coords, bearing, orig_dim, start_row=None, start_col=None)
             (coords[start_row:start_row+224, start_col:start_col+224,:], wraped_coords), axis=1)
         croped_bearing = np.concatenate(
             (bearing[start_row:start_row+224, start_col:start_col+224,:], wraped_bearing), axis=1)
+        croped_mask = np.concatenate(
+            (mask[start_row:start_row+224, start_col:start_col+224], wraped_mask), axis=1)
 
     else:
         croped_image = image[start_row:start_row+224, start_col:start_col+224,:]
         croped_coords = coords[start_row:start_row+224, start_col:start_col+224,:]
         croped_bearing = bearing[start_row:start_row+224, start_col:start_col+224,:]
+        croped_mask = mask[start_row:start_row+224, start_col:start_col+224]
 
-    return croped_image, croped_coords, croped_bearing
+    return croped_image, croped_coords, croped_bearing, croped_mask

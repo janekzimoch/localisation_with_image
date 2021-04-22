@@ -4,7 +4,11 @@ from tensorflow.keras import layers
 
 
 def vgg_encoder(input_shape=(224, 224, 3)):
+    
     image_input = layers.Input(shape=input_shape)
+
+    # image = model_input[:,:,:,:3]
+    # mask = model_input[:,:,:,3]
 
     # Block 1
     x = layers.Conv2D(64, (3, 3), activation='relu', padding='same', name='block1_conv1')(image_input)

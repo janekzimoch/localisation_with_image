@@ -14,7 +14,7 @@ def vgg_unet(input_height=224, input_width=224):
 def unet(encoder, l1_skip_conn=True, input_height=224,
           input_width=224):
 
-    img_input, levels = encoder(input_shape=(input_height, input_width, 3))
+    image_input, levels = encoder(input_shape=(input_height, input_width, 3))
     [f1, f2, f3, f4, f5] = levels
 
     o = f4
@@ -54,8 +54,9 @@ def unet(encoder, l1_skip_conn=True, input_height=224,
 
     
     output = layers.Conv2D(3, (3, 3), padding='same')(o)
-    
-    model = Model(img_input, output) 
+
+  
+    model = Model(image_input, output) 
 #     model.summary()
     
     return model

@@ -71,16 +71,16 @@ def get_pose_error(pred_pose, true_pose):
     return orient_error, loc_error
 
 
-def get_camera_points(R, T, scale=1, color=None):
+def get_camera_points(origin_vertices, R, T, scale=1, color=None):
     num_points = int(scale * 100)
-    origin_vertices = scale * np.array([[0,1,1],
-           [1,0,1],
-           [0,-1,1],
-           [-1,0,1]])
+    # origin_vertices = scale * np.array([[0,1,1],
+    #        [1,0,1],
+    #        [0,-1,1],
+    #        [-1,0,1]])
 
     origin_camera_center = np.array([0,0,0])
     
-    camera_center = np.matmul(origin_camera_center, R) + T
+    camera_center = T
     vertices = np.matmul(origin_vertices, R) + T
     
     # CAMERA FIELD
@@ -117,15 +117,15 @@ def get_line_points(first_point, second_point):
     return vertices, colors
 
 
-def save_ply_file(experiment_dir, pred_pose, true_pose, ground_truth_coords, image):
+def save_ply_file(experiment_dir, ind, origin_vertices, pred_pose, true_pose, ground_truth_coords, image):
 
     # get camera points
-    pred_camera_points, pred_camera_colors, pred_camera_center = get_camera_points(pred_pose['R'], pred_pose['T'], scale=0.2, color="blue")
-    true_camera_points, true_camera_colors, true_camera_center = get_camera_points(true_pose['R'], true_pose['T'], scale=0.2, color="green")
+    pred_camera_points, pred_camera_colors, pred_camera_center = get_camera_points(origin_vertices, pred_pose['R'], pred_pose['T'], scale=0.2, color="blue")
+    true_camera_points, true_camera_colors, true_camera_center = get_camera_points(origin_vertices, true_pose['R'], true_pose['T'], scale=0.2, color="green")
     error_line_points, error_line_colors = get_line_points(pred_camera_center, true_camera_center)
 
     # make folder in exp directory 
-    ply_exp_dir = experiment_dir + "/pose/"
+    ply_exp_dir = experiment_dir + f"/pose_img_{ind:04}/"
     if not os.path.exists(ply_exp_dir):
         os.makedirs(ply_exp_dir)
 

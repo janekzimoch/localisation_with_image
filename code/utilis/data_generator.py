@@ -30,7 +30,7 @@ class DataGenerator(keras.utils.Sequence):
         for i, ID in enumerate(npz_file_ID_temp):
             npz_data = np.load(ID)
             
-            images[i] = npz_data['image_colors'].astype(int)          
+            images[i] = npz_data['image_colors'].astype(int)
             labels[i] = npz_data['points_3d_world']
 
         return images, labels
@@ -56,34 +56,31 @@ class DataGenerator(keras.utils.Sequence):
         """ Images are equirectangular (360 projected onto a rectangle).
         Therefore we have to allow for all possibe crops, including these that run across the right image edge. """
 
-        image_crops = np.zeros((self.batch_size*self.num_crops, 224, 224, self.n_channels), dtype=np.int16)
-        label_crops = np.zeros((self.batch_size*self.num_crops, 224, 224, self.n_channels), dtype=np.float32)
+        image_crops = np.zeros((self.batch_size, 224, 224, self.n_channels), dtype=np.int16)
+        label_crops = np.zeros((self.batch_size, 224, 224, self.n_channels), dtype=np.float32)
 
-        for ind_1 in range(self.batch_size):
-            
-            # pick the start cordinates of croped images
-            start_row = np.random.randint(0, high=self.dim[0]-224, size=self.num_crops)
-            start_col = np.random.randint(0, high=self.dim[1], size=self.num_crops)
+        # pick the start cordinates of croped images
+        start_row = np.random.randint(0, high=self.dim[0]-224, size=self.batch_size)
+        start_col = np.random.randint(0, high=self.dim[1], size=self.batch_size)
 
-            # get all pixels that span 224 to the right and down from start pixels
-            # if a croped image runs across right image border, then use concatenate to combine pixels of croped image
-            for ind_2 in range(self.num_crops):
+        # get all pixels that span 224 to the right and down from start pixels
+        for ind in range(self.batch_size):
 
-                if start_col[ind_2] + 224 > 512:
-                    dif = start_col[ind_2] + 224 - 512
-                    wraped_image = images[ind_1, start_row[ind_2]:start_row[ind_2]+224, :dif,:]
-                    wraped_label = labels[ind_1, start_row[ind_2]:start_row[ind_2]+224, :dif,:]
-                    
-                    image_crops[ind_1*self.num_crops + ind_2] = np.concatenate(
-                        (images[ind_1, start_row[ind_2]:start_row[ind_2]+224, start_col[ind_2]:start_col[ind_2]+224,:], 
-                         wraped_image), axis=1)
-                    label_crops[ind_1*self.num_crops + ind_2] = np.concatenate(
-                        (labels[ind_1, start_row[ind_2]:start_row[ind_2]+224, start_col[ind_2]:start_col[ind_2]+224,:], 
-                         wraped_label), axis=1)
+            if start_col[ind] + 224 > 512:
+                dif = start_col[ind] + 224 - 512
+                wraped_image = images[ind, start_row[ind]:start_row[ind]+224, :dif,:]
+                wraped_label = labels[ind, start_row[ind]:start_row[ind]+224, :dif,:]
+                
+                image_crops[ind] = np.concatenate(
+                    (images[ind, start_row[ind]:start_row[ind]+224, start_col[ind]:start_col[ind]+224,:], 
+                        wraped_image), axis=1)
+                label_crops[ind] = np.concatenate(
+                    (labels[ind, start_row[ind]:start_row[ind]+224, start_col[ind]:start_col[ind]+224,:], 
+                        wraped_label), axis=1)
 
-                else:
-                    image_crops[ind_1*self.num_crops + ind_2] = images[ind_1, start_row[ind_2]:start_row[ind_2]+224, start_col[ind_2]:start_col[ind_2]+224,:]
-                    label_crops[ind_1*self.num_crops + ind_2] = labels[ind_1, start_row[ind_2]:start_row[ind_2]+224, start_col[ind_2]:start_col[ind_2]+224,:]
+            else:
+                image_crops[ind] = images[ind, start_row[ind]:start_row[ind]+224, start_col[ind]:start_col[ind]+224,:]
+                label_crops[ind] = labels[ind, start_row[ind]:start_row[ind]+224, start_col[ind]:start_col[ind]+224,:]
 
 
         return image_crops, label_crops
@@ -93,6 +90,13 @@ class DataGenerator(keras.utils.Sequence):
         'Denotes the number of batches per epoch'
         return int(np.floor(len(self.npz_file_IDs) / self.batch_size))
     
+    def get_mask(self, labels):
+        sumed_coords = np.sum(labels, axis=-1)
+        mask = np.where(sumed_coords == 0, 0, 1)
+        dim = mask.shape
+        mask = np.reshape(mask, (dim[0], dim[1], dim[2], 1) )
+
+        return mask
     
     
     def __getitem__(self, index):
@@ -112,4 +116,10 @@ class DataGenerator(keras.utils.Sequence):
         # crop
         images, labels = self.get_image_crops(images, labels)
     
+        # get mask
+        mask = self.get_mask(labels)
+
+        # coccatenate to images
+        labels = np.concatenate((labels, mask), axis=-1)
+
         return images, labels

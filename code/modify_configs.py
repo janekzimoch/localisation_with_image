@@ -2,9 +2,9 @@ import json
 
 configs = {
     'experiment_info': {
-        'experiment_name': "full_run_world_coord",
+        'experiment_name': "testing_callbacks",
         'experiment_dir': '/home/mlmi-2020/jz522/localisation_from_image_project/experiments/',
-        'multiple_GPU': True,
+        'multiple_GPU': False,
         'GPUs': ['/device:GPU:0', '/device:GPU:1', '/device:GPU:2', '/device:GPU:3']
     },
     'data_partition': {
@@ -14,6 +14,7 @@ configs = {
     },
 
     'callbacks': {
+        'save_input_images': True,
         'train_visualisation': True,
         'val_visualisation': True,
         'tensorboard': True,
@@ -23,11 +24,11 @@ configs = {
     },
 
     'data_generator': {
-        "batch_size": 20,
+        "batch_size": 10,
         "dim": (256,512),
         "n_channels": 3,
         "shuffle": True,
-        "num_crops": 8,
+        "num_crops": 1,
     },
 
     'compile_configs': {
@@ -35,13 +36,13 @@ configs = {
     },
 
     'model_configs': {
-        'learning_rate': 0.0000005,
+        'learning_rate': 1e-6,
         'run_from_checkpoint': True,
-        'checkpoint_dir': "/home/mlmi-2020/jz522/localisation_from_image_project/experiments/2021-04-18/full_run_world_coord_2021-04-18_11:28:32/model_checkpoint"
+        'checkpoint_dir': "/home/mlmi-2020/jz522/localisation_from_image_project/experiments/2021-04-21/masked_loss_long_2021-04-21_20:59:31/model_checkpoint"
     },
 
     'fit_model': {
-        'epochs': 200,
+        'epochs': 500,
         'verbose': 1,
     }
 }
