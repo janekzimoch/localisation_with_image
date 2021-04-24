@@ -1,0 +1,49 @@
+{
+    "callbacks": {
+        "garbage_cleaner": true,
+        "model_checkpoint": true,
+        "save_input_images": false,
+        "tensorboard": true,
+        "train_visualisation": false,
+        "val_visualisation": false,
+        "vis_frequency": 20
+    },
+    "compile_configs": {
+        "loss": "mse"
+    },
+    "data_generator": {
+        "batch_size": 10,
+        "dim": [
+            256,
+            512
+        ],
+        "n_channels": 3,
+        "num_crops": 1,
+        "shuffle": true
+    },
+    "data_partition": {
+        "data_dir": "/data/cornucopia/jz522/localisation_project/DS_003_JDB-Full/coordinates_256_512_full/",
+        "dataset_size": 370,
+        "val_split": 0.1
+    },
+    "experiment_info": {
+        "GPUs": [
+            "/device:GPU:0",
+            "/device:GPU:1",
+            "/device:GPU:2",
+            "/device:GPU:3"
+        ],
+        "experiment_dir": "/home/mlmi-2020/jz522/localisation_from_image_project/experiments/",
+        "experiment_name": "classification_test",
+        "multiple_GPU": false
+    },
+    "fit_model": {
+        "epochs": 50,
+        "verbose": 1
+    },
+    "model_configs": {
+        "checkpoint_dir": "/home/mlmi-2020/jz522/localisation_from_image_project/experiments/2021-04-21/masked_loss_long_2021-04-21_20:59:31/model_checkpoint",
+        "learning_rate": 0.001,
+        "run_from_checkpoint": false
+    }
+}
