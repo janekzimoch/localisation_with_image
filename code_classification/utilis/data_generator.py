@@ -43,22 +43,6 @@ class DataGenerator(keras.utils.Sequence):
             masks[i] = np.load(data_dir + mask_file_name)
 
         return images, labels, masks
-            
-            
-    def load_and_downsample(self, npz_file_ID_temp):
-        """ We choose to downsample to 256x512 and then crop 224x224 images. Downsampling to
-        256x512 has proven to work well in practice, although we ourselves haven't tested that statement."""
-        images = np.zeros((self.batch_size, *self.dim, self.n_channels), dtype=np.int16)
-        labels = np.zeros((self.batch_size, *self.dim, self.n_channels), dtype=np.float32)
-        
-
-        for i, ID in enumerate(npz_file_ID_temp):
-            npz_data = np.load(ID)
-
-            images[i,:,:,:] = cv2.resize(npz_data['image_colors'], self.dim[::-1], interpolation = cv2.INTER_CUBIC)
-            labels[i,:,:,:] = cv2.resize(np.array(npz_data['points_3d_world'], dtype=np.float32), self.dim[::-1], interpolation = cv2.INTER_NEAREST)
-
-        return images, labels
 
     
     def get_image_crops(self, images, labels, masks):
@@ -104,15 +88,7 @@ class DataGenerator(keras.utils.Sequence):
         'Denotes the number of batches per epoch'
         return int(np.floor(len(self.npz_file_IDs) / self.batch_size))
     
-    def get_mask(self, labels):
-        sumed_coords = np.sum(labels, axis=-1)
-        mask = np.where(sumed_coords == 0, 0, 1)
-        dim = mask.shape
-        mask = np.reshape(mask, (dim[0], dim[1], dim[2], 1) )
-
-        return mask
-    
-    
+     
     def __getitem__(self, index):
         'Generate one batch of data'
         # Generate indexes of the batch
@@ -122,22 +98,20 @@ class DataGenerator(keras.utils.Sequence):
         list_IDs_temp = [self.npz_file_IDs[k] for k in indexes]
 
         # load images (from a downsampled dataset)
-        images, labels, masks = self.load_data(list_IDs_temp)
+        images, labels, mask = self.load_data(list_IDs_temp)
         
-        # Get images and labels (downsampled)
-        # images, labels = self.load_and_downsample(list_IDs_temp)
-
         # crop
-        images, labels, masks = self.get_image_crops(images, labels, masks)
-        masks = np.expand_dims(masks, axis=-1)
+        images, labels, mask = self.get_image_crops(images, labels, mask)
+#         mask = np.expand_dims(mask, axis=-1)
     
-        # get mask
-        # mask = self.get_mask(labels)
-
         # one-hot encode labels
         labels = (np.arange(labels.max()+1) == labels[...,None]).astype(int)
 
         # coccatenate to images
-        labels = np.concatenate((labels, masks), axis=-1)
+#         labels = np.concatenate((labels, masks), axis=-1)
 
-        return images, labels
+        # nested_masks = [mask for _ in range(8)]
+        # mask_expanded = np.stack(nested_masks, axis=-1)
+        # labels = labels * mask_expanded
+
+        return [images, mask], labels

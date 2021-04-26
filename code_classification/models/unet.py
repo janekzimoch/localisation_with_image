@@ -3,6 +3,9 @@ from tensorflow.keras import layers
 from tensorflow.keras.models import Model
 from models.encoders.vgg_encoder import *
 
+from tensorflow.keras.models import Model
+
+
 def vgg_unet(input_height=224, input_width=224):
 
     model = unet(vgg_encoder, input_height=input_height, input_width=input_width)
@@ -14,7 +17,10 @@ def vgg_unet(input_height=224, input_width=224):
 def unet(encoder, l1_skip_conn=True, input_height=224,
           input_width=224):
 
-    image_input, levels = encoder(input_shape=(input_height, input_width, 3))
+    image_input = layers.Input(shape=(224, 224, 3))
+    mask = layers.Input(shape=(224, 224))
+    
+    image_input, levels = encoder(image_input)
     [f1, f2, f3, f4, f5] = levels
 
     o = f4
@@ -51,16 +57,16 @@ def unet(encoder, l1_skip_conn=True, input_height=224,
     o = (layers.BatchNormalization())(o)
     
     o = layers.Conv2D(64, (3, 3), padding='same')(o)
-
     # 3D SCENE COORD - REGRESSION    
     # output = layers.Conv2D(3, (3, 3), padding='same')(o)
 
     # CLASSIFICATION
     o = layers.Conv2D(8, (3, 3), padding='same')(o)
     output = keras.activations.softmax(o, axis=-1)
-
-  
-    model = Model(image_input, output) 
-    # model.summary()
+    
+    # output_masked = layers.Multiply()([output, mask])
+    
+    model = Model(inputs=[image_input, mask], outputs=output) 
+    model.summary()
     
     return model

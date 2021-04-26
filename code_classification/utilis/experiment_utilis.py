@@ -161,15 +161,6 @@ def masked_MSE(y_true, y_pred):
 def masked_X_entropy(y_true, y_pred):
     " masked CrossEntropy - used for classification of regions "
 
-    mask = y_true[:,:,:,-1]
-    y_true = y_true[:,:,:,:8]
-
-    nested_masks = [mask for _ in range(8)]
-    mask_expanded = tf.stack(nested_masks, axis=-1)
-
-    y_pred = tf.math.multiply(y_pred, mask_expanded)
-    y_true = tf.math.multiply(y_true, mask_expanded)
-
     loss = tf.keras.losses.categorical_crossentropy(y_true, y_pred)
     return tf.reduce_mean(loss)
 

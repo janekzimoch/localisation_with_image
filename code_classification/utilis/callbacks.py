@@ -14,11 +14,10 @@ class RemoveGarbageCallback(keras.callbacks.Callback):
 
 
 class Save_sample_input(keras.callbacks.Callback):
-    def __init__(self, images, labels, exp_name):
+    def __init__(self, input_data, labels, exp_name):
         super(Save_sample_input, self).__init__()
-        self.images = images
-        self.ground_truth = labels[:,:,:,:3]
-        self.mask = labels[:,:,:,3]
+        self.images, self.mask = input_data
+        self.ground_truth = labels
         self.save_dir = '/home/mlmi-2020/jz522/localisation_from_image_project/experiments/' + exp_name + "/sample_input/"
         
         if not os.path.exists(self.save_dir):
@@ -38,7 +37,8 @@ class Save_sample_input(keras.callbacks.Callback):
             ax2.set_title('Mask applied to pred')
 
             # plot 3d coords
-            im3 = ax3.imshow(np.linalg.norm(gt, axis=-1), cmap='Greys')
+            # im3 = ax3.imshow(np.linalg.norm(gt, axis=-1), cmap='Greys')
+            im3 = ax3.imshow(np.argmax(gt, axis=-1), cmap='Greys')
             ax3.set_title('Ground truth - depth')
             
             file_name = "input_visualisation_" + str(i)
@@ -58,11 +58,10 @@ class Visualise_learning(keras.callbacks.Callback):
     1) Current visualisation is very 2D. Would be nice to improve its meanigfulness.
     2) See if you can display figures online (integrate with TensorBoard?)    
     """
-    def __init__(self, train_image, ground_truth, frequency, exp_name, train_val_setting):
+    def __init__(self, input_data, ground_truth, frequency, exp_name, train_val_setting):
         super(Visualise_learning, self).__init__()
-        self.train_image = train_image
-        self.ground_truth = ground_truth[:,:,:3]
-        self.mask = ground_truth[:,:,3]
+        self.images, self.mask = input_data
+        self.ground_truth = ground_truth
         self.frequency = frequency
         self.train_val_setting = train_val_setting
         self.save_dir = '/home/mlmi-2020/jz522/localisation_from_image_project/experiments/' + exp_name + "/train_visualisations/" + train_val_setting

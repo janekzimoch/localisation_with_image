@@ -14,7 +14,7 @@ configs = {
     },
 
     'callbacks': {
-        'save_input_images': False,
+        'save_input_images': True,
         'train_visualisation': False,
         'val_visualisation': False,
         'tensorboard': True,
@@ -24,7 +24,7 @@ configs = {
     },
 
     'data_generator': {
-        "batch_size": 10,
+        "batch_size": 20,
         "dim": (256,512),
         "n_channels": 3,
         "shuffle": True,
@@ -36,13 +36,13 @@ configs = {
     },
 
     'model_configs': {
-        'learning_rate': 1e-3,
-        'run_from_checkpoint': False,
-        'checkpoint_dir': "/home/mlmi-2020/jz522/localisation_from_image_project/experiments/2021-04-21/masked_loss_long_2021-04-21_20:59:31/model_checkpoint"
+        'learning_rate': 1e-5,
+        'run_from_checkpoint': True,
+        'checkpoint_dir': "/home/mlmi-2020/jz522/localisation_from_image_project/experiments/2021-04-25/classification_test_2021-04-25_08:11:48/model_checkpoint"
     },
 
     'fit_model': {
-        'epochs': 50,
+        'epochs': 300,
         'verbose': 1,
     }
 }

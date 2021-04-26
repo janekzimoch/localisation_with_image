@@ -2,7 +2,7 @@
     "callbacks": {
         "garbage_cleaner": true,
         "model_checkpoint": true,
-        "save_input_images": false,
+        "save_input_images": true,
         "tensorboard": true,
         "train_visualisation": false,
         "val_visualisation": false,
@@ -12,7 +12,7 @@
         "loss": "mse"
     },
     "data_generator": {
-        "batch_size": 10,
+        "batch_size": 20,
         "dim": [
             256,
             512
@@ -38,12 +38,12 @@
         "multiple_GPU": false
     },
     "fit_model": {
-        "epochs": 50,
+        "epochs": 300,
         "verbose": 1
     },
     "model_configs": {
-        "checkpoint_dir": "/home/mlmi-2020/jz522/localisation_from_image_project/experiments/2021-04-21/masked_loss_long_2021-04-21_20:59:31/model_checkpoint",
-        "learning_rate": 0.001,
-        "run_from_checkpoint": false
+        "checkpoint_dir": "/home/mlmi-2020/jz522/localisation_from_image_project/experiments/2021-04-25/classification_test_2021-04-25_08:11:48/model_checkpoint",
+        "learning_rate": 1e-05,
+        "run_from_checkpoint": true
     }
 }
