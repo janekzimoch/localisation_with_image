@@ -2,29 +2,30 @@ import json
 
 configs = {
     'experiment_info': {
-        'experiment_name': "testing_callbacks",
-        'experiment_dir': '/home/mlmi-2020/jz522/localisation_from_image_project/experiments/',
+        'experiment_name': "reg__one_crop__old_code",
+        'experiment_dir': '/data/cornucopia/jz522/experiments/',
         'multiple_GPU': False,
         'GPUs': ['/device:GPU:0', '/device:GPU:1', '/device:GPU:2', '/device:GPU:3']
     },
     'data_partition': {
         'dataset_size': 370,
-        'data_dir': "/data/cornucopia/jz522/localisation_project/DS_003_JDB-Full/coordinates_256_512_full/",
+        'data_dir': "/data/cornucopia/jz522/localisation_project/DS_003_JDB-Full/coordinates_256_512_complete_working_141_classes/",
         'val_split': 0.1
     },
 
     'callbacks': {
         'save_input_images': True,
         'train_visualisation': True,
-        'val_visualisation': True,
+        'val_visualisation': False,
         'tensorboard': True,
-        'model_checkpoint': True,
+        'model_checkpoint': False,
         'garbage_cleaner': True,
         "vis_frequency": 20
     },
 
     'data_generator': {
-        "batch_size": 10,
+        "single_image": True,
+        "batch_size": 1,
         "dim": (256,512),
         "n_channels": 3,
         "shuffle": True,
@@ -36,8 +37,8 @@ configs = {
     },
 
     'model_configs': {
-        'learning_rate': 1e-6,
-        'run_from_checkpoint': True,
+        'learning_rate': 5e-4,
+        'run_from_checkpoint': False,
         'checkpoint_dir': "/home/mlmi-2020/jz522/localisation_from_image_project/experiments/2021-04-21/masked_loss_long_2021-04-21_20:59:31/model_checkpoint"
     },
 

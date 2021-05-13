@@ -102,19 +102,19 @@ def get_callbacks(train_gen, val_gen,**kwargs):
 
     if kwargs['save_input_images'] == True:
         images, labels = train_gen.__getitem__(0)
-        save_sample_input = Save_sample_input(images, labels, kwargs['experiment_name'])
+        save_sample_input = Save_sample_input(images, labels, kwargs['experiment_dir'], kwargs['experiment_name'])
         callbacks.append(save_sample_input)
 
     if kwargs['train_visualisation'] == True:
         images, labels = train_gen.__getitem__(0)
         vis_learning = Visualise_learning(images[0], labels[0], 
-                                            kwargs['vis_frequency'], kwargs['experiment_name'], "train/")
+                                            kwargs['vis_frequency'], kwargs['experiment_dir'], kwargs['experiment_name'], "train/")
         callbacks.append(vis_learning)
 
     if kwargs['val_visualisation'] == True:
         images, labels = val_gen.__getitem__(0)
         vis_learning = Visualise_learning(images[0], labels[0], 
-                                            kwargs['vis_frequency'], kwargs['experiment_name'], "val/")
+                                            kwargs['vis_frequency'], kwargs['experiment_dir'], kwargs['experiment_name'], "val/")
         callbacks.append(vis_learning)
 
     if kwargs['tensorboard'] == True:
@@ -152,11 +152,24 @@ def masked_MSE(y_true, y_pred):
     y_true = tf.math.multiply(y_true, mask_expanded)
 
 
-    squared_difference = tf.square(y_true - y_pred)
-    # loss = tf.reduce_mean(squared_difference, axis=-1)
-    loss = tf.reduce_mean(squared_difference)
+    regr_loss = tf.keras.losses.mean_squared_error(y_true, y_pred)
+    regr_loss = tf.reduce_mean(regr_loss)
 
-    return loss
+    return regr_loss
+
+
+def pixelwise_MSE_metric(y_true, y_pred):
+    mask = y_true[:,:,:,3]
+    y_true = y_true[:,:,:,:3]
+
+    mask_expanded = tf.stack([mask,mask,mask], axis=-1)
+
+    y_pred = tf.math.multiply(y_pred, mask_expanded)
+    y_true = tf.math.multiply(y_true, mask_expanded)
+    squared_difference = tf.square(y_true - y_pred)
+    return tf.reduce_mean(squared_difference, axis=-1)
+
+    
 
 
 
@@ -164,6 +177,7 @@ def setup_model(compile_configs, **kwargs):
     
     if not kwargs['run_from_checkpoint']:
         unet_model = vgg_unet()
+        print('Learning rate: ', kwargs['learning_rate'])
         unet_model.compile(optimizer=keras.optimizers.Adam(kwargs['learning_rate']), loss=masked_MSE)
     else:
         unet_model = keras.models.load_model(kwargs['checkpoint_dir'], compile=False)

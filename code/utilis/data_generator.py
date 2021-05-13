@@ -4,9 +4,15 @@ import keras
 class DataGenerator(keras.utils.Sequence):
     """ Loads, downsamples, crops, and auguments images and labels """
     
-    def __init__(self, npz_file_IDs, batch_size=8, dim=(256,512), n_channels=3, shuffle=True, num_crops=4):
+    def __init__(self, npz_file_IDs, single_image, batch_size=8, dim=(256,512), n_channels=3, shuffle=True, num_crops=4):
+        
+        if single_image:
+            self.npz_file_IDs = ["/data/cornucopia/jz522/localisation_project/DS_003_JDB-Full/coordinates_256_512_complete_working_141_classes/0001_rendered.png_config.npz"]
+            self.single_crop = True
+        else:
+            self.npz_file_IDs = npz_file_IDs
+            self.single_crop = False
 
-        self.npz_file_IDs = npz_file_IDs
         self.batch_size = batch_size
         self.dim = dim
         self.n_channels = n_channels
@@ -24,13 +30,13 @@ class DataGenerator(keras.utils.Sequence):
             
     def load_data(self, npz_file_ID_temp):
         """ Load .npz files with images and labels from self.room_dir """
-        images = np.empty((self.batch_size, *self.dim, self.n_channels), dtype=np.int16)
+        images = np.empty((self.batch_size, *self.dim, self.n_channels), dtype=np.float32)
         labels = np.empty((self.batch_size, *self.dim, self.n_channels), dtype=np.float32)
 
         for i, ID in enumerate(npz_file_ID_temp):
             npz_data = np.load(ID)
             
-            images[i] = npz_data['image_colors'].astype(int)
+            images[i] = npz_data['image_colors']
             labels[i] = npz_data['points_3d_world']
 
         return images, labels
@@ -39,7 +45,7 @@ class DataGenerator(keras.utils.Sequence):
     def load_and_downsample(self, npz_file_ID_temp):
         """ We choose to downsample to 256x512 and then crop 224x224 images. Downsampling to
         256x512 has proven to work well in practice, although we ourselves haven't tested that statement."""
-        images = np.zeros((self.batch_size, *self.dim, self.n_channels), dtype=np.int16)
+        images = np.zeros((self.batch_size, *self.dim, self.n_channels), dtype=np.float32)
         labels = np.zeros((self.batch_size, *self.dim, self.n_channels), dtype=np.float32)
         
 
@@ -56,12 +62,16 @@ class DataGenerator(keras.utils.Sequence):
         """ Images are equirectangular (360 projected onto a rectangle).
         Therefore we have to allow for all possibe crops, including these that run across the right image edge. """
 
-        image_crops = np.zeros((self.batch_size, 224, 224, self.n_channels), dtype=np.int16)
+        image_crops = np.zeros((self.batch_size, 224, 224, self.n_channels), dtype=np.float32)
         label_crops = np.zeros((self.batch_size, 224, 224, self.n_channels), dtype=np.float32)
 
         # pick the start cordinates of croped images
-        start_row = np.random.randint(0, high=self.dim[0]-224, size=self.batch_size)
-        start_col = np.random.randint(0, high=self.dim[1], size=self.batch_size)
+        if self.single_crop:
+            start_row = [0]*self.batch_size
+            start_col = [0]*self.batch_size
+        else:
+            start_row = np.random.randint(0, high=self.dim[0]-224, size=self.batch_size)
+            start_col = np.random.randint(0, high=self.dim[1], size=self.batch_size)
 
         # get all pixels that span 224 to the right and down from start pixels
         for ind in range(self.batch_size):

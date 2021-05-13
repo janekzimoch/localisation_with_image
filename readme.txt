@@ -9,7 +9,7 @@ source /home/mlmi-2020/jz522/localisation_from_image_project/envs/loc/bin/activa
 
 GIT COMMANDS:
 git add -A
-git commit -m "added baseline pose estimation code"
+git commit -m "improved generation of classification GT data"
 git push -u origin master
 
 git diff --stat | tail -n1

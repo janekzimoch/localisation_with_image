@@ -14,12 +14,12 @@ class RemoveGarbageCallback(keras.callbacks.Callback):
 
 
 class Save_sample_input(keras.callbacks.Callback):
-    def __init__(self, images, labels, exp_name):
+    def __init__(self, images, labels, exp_dir, exp_name):
         super(Save_sample_input, self).__init__()
         self.images = images
         self.ground_truth = labels[:,:,:,:3]
         self.mask = labels[:,:,:,3]
-        self.save_dir = '/home/mlmi-2020/jz522/localisation_from_image_project/experiments/' + exp_name + "/sample_input/"
+        self.save_dir = exp_dir + exp_name + "/sample_input/"
         
         if not os.path.exists(self.save_dir):
             os.makedirs(self.save_dir)
@@ -58,14 +58,14 @@ class Visualise_learning(keras.callbacks.Callback):
     1) Current visualisation is very 2D. Would be nice to improve its meanigfulness.
     2) See if you can display figures online (integrate with TensorBoard?)    
     """
-    def __init__(self, train_image, ground_truth, frequency, exp_name, train_val_setting):
+    def __init__(self, train_image, ground_truth, frequency, exp_dir, exp_name, train_val_setting):
         super(Visualise_learning, self).__init__()
         self.train_image = train_image
         self.ground_truth = ground_truth[:,:,:3]
         self.mask = ground_truth[:,:,3]
         self.frequency = frequency
         self.train_val_setting = train_val_setting
-        self.save_dir = '/home/mlmi-2020/jz522/localisation_from_image_project/experiments/' + exp_name + "/train_visualisations/" + train_val_setting
+        self.save_dir = exp_dir + exp_name + "/train_visualisations/" + train_val_setting
         
         if not os.path.exists(self.save_dir):
             os.makedirs(self.save_dir)

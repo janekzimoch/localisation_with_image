@@ -1,28 +1,29 @@
 {
     "callbacks": {
         "garbage_cleaner": true,
-        "model_checkpoint": true,
+        "model_checkpoint": false,
         "save_input_images": true,
         "tensorboard": true,
         "train_visualisation": true,
-        "val_visualisation": true,
+        "val_visualisation": false,
         "vis_frequency": 20
     },
     "compile_configs": {
         "loss": "mse"
     },
     "data_generator": {
-        "batch_size": 10,
+        "batch_size": 1,
         "dim": [
             256,
             512
         ],
         "n_channels": 3,
         "num_crops": 1,
-        "shuffle": true
+        "shuffle": true,
+        "single_image": true
     },
     "data_partition": {
-        "data_dir": "/data/cornucopia/jz522/localisation_project/DS_003_JDB-Full/coordinates_256_512_full/",
+        "data_dir": "/data/cornucopia/jz522/localisation_project/DS_003_JDB-Full/coordinates_256_512_complete_working_141_classes/",
         "dataset_size": 370,
         "val_split": 0.1
     },
@@ -33,8 +34,8 @@
             "/device:GPU:2",
             "/device:GPU:3"
         ],
-        "experiment_dir": "/home/mlmi-2020/jz522/localisation_from_image_project/experiments/",
-        "experiment_name": "testing_callbacks",
+        "experiment_dir": "/data/cornucopia/jz522/experiments/",
+        "experiment_name": "reg__one_crop__old_code",
         "multiple_GPU": false
     },
     "fit_model": {
@@ -43,7 +44,7 @@
     },
     "model_configs": {
         "checkpoint_dir": "/home/mlmi-2020/jz522/localisation_from_image_project/experiments/2021-04-21/masked_loss_long_2021-04-21_20:59:31/model_checkpoint",
-        "learning_rate": 1e-06,
-        "run_from_checkpoint": true
+        "learning_rate": 0.0005,
+        "run_from_checkpoint": false
     }
 }
