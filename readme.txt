@@ -9,7 +9,7 @@ source /home/mlmi-2020/jz522/localisation_from_image_project/envs/loc/bin/activa
 
 GIT COMMANDS:
 git add -A
-git commit -m "improved generation of classification GT data"
+git commit -m "added resnet"
 git push -u origin master
 
 git diff --stat | tail -n1
@@ -23,7 +23,7 @@ python -m ipykernel install --user --name "localication" --display-name "Python 
 
 
 
-tensorboard --logdir experiments/logs
+tensorboard --logdir /data/cornucopia/jz522/experiments/logs
 
 
 TO KILL PROCESSES ON GPU
@@ -53,4 +53,10 @@ make install
 
 
 
- cp /data/cornucopia/ib255/derivative_datasets/cued_scene_coordinate_regression/data_from_jason/DS_003_JDB-Full/coordinates/0001_rendered.png_config_world.ply ./0001_rendered.png_config_world.ply
+for model computational and memory requirements use model-profiler
+from model_profiler import model_profiler
+
+Batch_size = 32
+profile = model_profiler(model, Batch_size)
+
+print(profile) 

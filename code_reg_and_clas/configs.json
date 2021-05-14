@@ -36,7 +36,7 @@
             "/device:GPU:3"
         ],
         "experiment_dir": "/data/cornucopia/jz522/experiments/",
-        "experiment_name": "reg-clas__weights_5_1__one_crop",
+        "experiment_name": "resnet_test_w10_1_LR5e-4",
         "multiple_GPU": false
     },
     "fit_model": {
@@ -49,7 +49,7 @@
         "num_regions": 141,
         "run_from_checkpoint": false,
         "weights": [
-            5,
+            10,
             1
         ]
     }

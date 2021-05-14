@@ -2,7 +2,7 @@ import json
 
 configs = {
     'experiment_info': {
-        'experiment_name': "reg-clas__weights_5_1__one_crop",
+        'experiment_name': "resnet_test_w10_1_LR5e-4",
         'experiment_dir': '/data/cornucopia/jz522/experiments/',
         'multiple_GPU': False,
         'GPUs': ['/device:GPU:0', '/device:GPU:1', '/device:GPU:2', '/device:GPU:3']
@@ -39,7 +39,7 @@ configs = {
 
     'model_configs': {
         'learning_rate': 5e-4,
-        'weights': [5, 1],
+        'weights': [10, 1],
         'num_regions': 141,
         'run_from_checkpoint': False,
         'checkpoint_dir': "/home/mlmi-2020/jz522/localisation_from_image_project/experiments/2021-04-30/combine_reg_and_clas__2021-04-30_18:24:33/model_checkpoint"

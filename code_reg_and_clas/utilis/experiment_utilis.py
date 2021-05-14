@@ -14,8 +14,8 @@ from tensorflow import keras
 
 from utilis.data_generator import *
 from utilis.callbacks import *
-from models.unet import *
-from models.encoders.vgg_encoder import *
+# from models.unet import *
+from models.unet_resnet_compat import *
 
 
 def get_configs(json_configs_file):
