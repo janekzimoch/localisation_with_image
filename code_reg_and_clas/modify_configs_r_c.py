@@ -2,7 +2,7 @@ import json
 
 configs = {
     'experiment_info': {
-        'experiment_name': "resnet_test_w10_1_LR5e-4",
+        'experiment_name': "FPN_resnet_bs16_LR5e-4_w11_CONTINUED", #"fpn_resnet__bs16__LR5e-4__w10",
         'experiment_dir': '/data/cornucopia/jz522/experiments/',
         'multiple_GPU': False,
         'GPUs': ['/device:GPU:0', '/device:GPU:1', '/device:GPU:2', '/device:GPU:3']
@@ -15,18 +15,20 @@ configs = {
 
     'callbacks': {
         'save_input_images': True,
-        'pixelwise_MSE': True,
+        'pixelwise_MSE_single': False,
+        'pixelwise_MSE_train': True,
+        'pixelwise_MSE_val': True,
         'train_visualisation': True,
-        'val_visualisation': False,
+        'val_visualisation': True,
         'tensorboard': True,
-        'model_checkpoint': False,
+        'model_checkpoint': True,
         'garbage_cleaner': True,
         "vis_frequency": 20
     },
 
     'data_generator': {
-        "single_image": True,
-        "batch_size": 1,
+        "single_image": False,
+        "batch_size": 16,
         "dim": (256,512),
         'num_regions': 141, 
         "shuffle": True,
@@ -38,17 +40,17 @@ configs = {
     },
 
     'model_configs': {
-        'learning_rate': 5e-4,
-        'weights': [10, 1],
+        'learning_rate': 1e-4,
+        'weights': [1, 1],
         'num_regions': 141,
-        'run_from_checkpoint': False,
-        'checkpoint_dir': "/home/mlmi-2020/jz522/localisation_from_image_project/experiments/2021-04-30/combine_reg_and_clas__2021-04-30_18:24:33/model_checkpoint"
+        'run_from_checkpoint': True,
+        'checkpoint_dir': "/data/cornucopia/jz522/experiments/2021-05-17/FPN_resnet_bs16_LR5e-4_w11_CONTINUED_2021-05-17_00:25:31/model_checkpoint"
     },
 
     'fit_model': {
         'epochs': 500,
         'verbose': 1,
-    }
+    }   
 }
 
 with open('configs.json', 'w') as json_file:

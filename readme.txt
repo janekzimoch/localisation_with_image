@@ -9,7 +9,7 @@ source /home/mlmi-2020/jz522/localisation_from_image_project/envs/loc/bin/activa
 
 GIT COMMANDS:
 git add -A
-git commit -m "added resnet"
+git commit -m "added fpn"
 git push -u origin master
 
 git diff --stat | tail -n1
@@ -23,7 +23,7 @@ python -m ipykernel install --user --name "localication" --display-name "Python 
 
 
 
-tensorboard --logdir /data/cornucopia/jz522/experiments/logs
+tensorboard --logdir /data/cornucopia/jz522/experiments/logs/2021-05-15
 
 
 TO KILL PROCESSES ON GPU

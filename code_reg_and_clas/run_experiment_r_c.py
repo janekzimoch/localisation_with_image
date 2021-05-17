@@ -1,4 +1,5 @@
 from utilis.experiment_utilis import *
+import json
 
 
 def run_experiment(json_configs_file):
@@ -13,10 +14,12 @@ def run_experiment(json_configs_file):
         print('Number of devices: {}'.format(strategy.num_replicas_in_sync))
 
         with strategy.scope():
-            run_setup(configs)
+            history, metrics = run_setup(configs)
     else:
-        run_setup(configs)
+        history, metrics = run_setup(configs)
+        # run_setup(configs)
 
+    return history, metrics
 
 def run_setup(configs):
     
@@ -27,7 +30,7 @@ def run_setup(configs):
     configs['experiment_info']['experiment_name'] = experiment_name
 
     # get data IDs
-    print("Partitionin gdataset IDs ...")
+    print("Partitioning dataset IDs ...")
     data_partition = get_data(experiment_full_name, **configs['data_partition'], **configs['model_configs'])
 
     # setup generator
@@ -36,9 +39,10 @@ def run_setup(configs):
 
     # setup callbacks
     print("Getting callbacks ...")
-    callbacks = get_callbacks(train_generator, validation_generator,
+    callbacks, MSE_train, MSE_val = get_callbacks(train_generator, validation_generator,
                                 **configs['callbacks'], **configs['experiment_info'])
-
+    # , MSE_train, MSE_val 
+    
     # setup model
     print("Setting up model ...")
     model = setup_model(configs['compile_configs'], **configs['model_configs'])
@@ -54,5 +58,16 @@ def run_setup(configs):
     model_dir = experiment_full_name + "/saved_model"
     os.makedirs(model_dir)
     model.save(model_dir + '/my_model')
+
+    # extract MSE values from the Callback object
+    train_MSE, train_MSE_90th = MSE_train.get_metric()
+    val_MSE, val_MSE_90th = MSE_val.get_metric()
+    MSE_metrics = {'train_MSE': train_MSE, 'train_MSE_90th': train_MSE_90th, 'val_MSE': val_MSE, 'val_MSE_90th': val_MSE_90th}
+
+    # save those metrics to a json file
+    with open(experiment_full_name + '/MSE_metric.json', 'w') as json_file:
+        json.dump(MSE_metrics, json_file, sort_keys=True, indent=4)
+
+    return history, [train_MSE, train_MSE_90th, val_MSE, val_MSE_90th]
 
 

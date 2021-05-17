@@ -26,6 +26,7 @@ class DataGenerator(keras.utils.Sequence):
         self.indexes = np.arange(len(self.npz_file_IDs))
         if self.shuffle == True:
             np.random.shuffle(self.indexes)
+
             
             
     def load_data(self, npz_file_ID_temp):

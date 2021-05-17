@@ -15,7 +15,7 @@ from tensorflow import keras
 from utilis.data_generator import *
 from utilis.callbacks import *
 # from models.unet import *
-from models.unet_resnet_compat import *
+from models.fpn import *
 
 
 def get_configs(json_configs_file):
@@ -98,6 +98,7 @@ def get_data(experiment_full_name, dataset_size,
 
 def get_callbacks(train_gen, val_gen,**kwargs):
     callbacks = []
+    file_name = "/data/cornucopia/jz522/localisation_project/DS_003_JDB-Full/coordinates_256_512_complete_working_141_classes/0001_rendered.png_config.npz"
 
     if kwargs['tensorboard'] == True:
         logdir = kwargs['experiment_dir'] + "logs/" + kwargs['experiment_name']
@@ -107,11 +108,19 @@ def get_callbacks(train_gen, val_gen,**kwargs):
         tensorboard_callback = keras.callbacks.TensorBoard(log_dir=logdir)
         callbacks.append(tensorboard_callback)
 
-    if kwargs['pixelwise_MSE'] == True:
-        file_name = "/data/cornucopia/jz522/localisation_project/DS_003_JDB-Full/coordinates_256_512_complete_working_141_classes/0001_rendered.png_config.npz"
-
+    if kwargs['pixelwise_MSE_single'] == True:
         global_coord_mse_callback = pixelwise_MSE(file_name, 1, 20, kwargs['experiment_dir'], kwargs['experiment_name'])
         callbacks.append(global_coord_mse_callback)
+
+
+    if kwargs['pixelwise_MSE_train'] == True:
+        global_coord_mse_train_callback = pixelwise_MSE_agregate(train_gen,file_name, 1, 20, kwargs['experiment_dir'], kwargs['experiment_name'], train=True)
+        callbacks.append(global_coord_mse_train_callback)
+
+    if kwargs['pixelwise_MSE_val'] == True:        
+        global_coord_mse_val_callback = pixelwise_MSE_agregate(val_gen, file_name, 1, 20, kwargs['experiment_dir'], kwargs['experiment_name'], train=False)
+        callbacks.append(global_coord_mse_val_callback)
+
 
     if kwargs['save_input_images'] == True:
         [images, mask], labels = train_gen.__getitem__(0)
@@ -144,7 +153,7 @@ def get_callbacks(train_gen, val_gen,**kwargs):
     if kwargs['garbage_cleaner'] == True:
         callbacks.append(RemoveGarbageCallback())
 
-    return callbacks
+    return callbacks, global_coord_mse_train_callback, global_coord_mse_val_callback
 
 
 def combined_loss_weighted(weights):
@@ -174,7 +183,7 @@ def combined_loss_weighted(weights):
 def setup_model(compile_configs, **kwargs):
     
     if not kwargs['run_from_checkpoint']:
-        unet_model = vgg_unet(num_regions=kwargs['num_regions'])
+        unet_model = resnet_fpn(num_regions=kwargs['num_regions'])
         print('reg weight: ', kwargs['weights'][0], '   clas weight: ', kwargs['weights'][1])
         unet_model.compile(optimizer=keras.optimizers.Adam(kwargs['learning_rate']), loss=combined_loss_weighted(kwargs['weights']))
     else:

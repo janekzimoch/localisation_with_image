@@ -7,7 +7,6 @@ from tensorflow.keras.models import Model
 
 def vgg_unet(num_regions, input_height=224, input_width=224):
 
-    print('Running: VGG-16 backbone')
     model = unet(vgg_encoder, num_regions, input_height=input_height, input_width=input_width)
     model.model_name = "vgg_unet"
     

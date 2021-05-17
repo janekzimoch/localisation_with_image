@@ -7,7 +7,7 @@ from tensorflow.keras.models import Model
 
 def resnet_fpn(num_regions, input_height=224, input_width=224):
 
-    print('Running: VGG-16 backbone')
+    print('Running: ResNet 18 backbone')
     model = fpn(resNet_18_encoder, num_regions, input_height=input_height, input_width=input_width)
     model.model_name = "resnet_fpn"
     
@@ -61,19 +61,19 @@ def fpn(encoder, num_regions, l1_skip_conn=True, input_height=224,
     up_p4 = layers.Conv2D(128, (3, 3), padding='same')(P4)
     up_p4 = layers.BatchNormalization(axis=-1)(up_p4)  # tfa.layers.GroupNormalization()
     up_p4 = layers.Activation("relu")(up_p4)
-    up_p4 = layers.UpSampling2D((2, 2))(up_p4)
+    up_p4 = layers.UpSampling2D((2, 2), interpolation="bilinear")(up_p4)
 
     # P4 - 2
     up_p4 = layers.Conv2D(128, (3, 3), padding='same')(up_p4)
     up_p4 = layers.BatchNormalization(axis=-1)(up_p4)  # tfa.layers.GroupNormalization()
     up_p4 = layers.Activation("relu")(up_p4)
-    up_p4 = layers.UpSampling2D((2, 2))(up_p4)
+    up_p4 = layers.UpSampling2D((2, 2), interpolation="bilinear")(up_p4)
 
-    # P4 - 1
+    # P4 - 3
     up_p4 = layers.Conv2D(128, (3, 3), padding='same')(up_p4)
     up_p4 = layers.BatchNormalization(axis=-1)(up_p4)  # tfa.layers.GroupNormalization()
     up_p4 = layers.Activation("relu")(up_p4)
-    up_p4 = layers.UpSampling2D((2, 2))(up_p4)
+    up_p4 = layers.UpSampling2D((2, 2), interpolation="bilinear")(up_p4)
 
 
 
@@ -81,13 +81,13 @@ def fpn(encoder, num_regions, l1_skip_conn=True, input_height=224,
     up_p3 = layers.Conv2D(128, (3, 3), padding='same')(P3)
     up_p3 = layers.BatchNormalization(axis=-1)(up_p3)  # tfa.layers.GroupNormalization()
     up_p3 = layers.Activation("relu")(up_p3)
-    up_p3 = layers.UpSampling2D((2, 2))(up_p3)
+    up_p3 = layers.UpSampling2D((2, 2), interpolation="bilinear")(up_p3)
 
     # P3 - 2
     up_p3 = layers.Conv2D(128, (3, 3), padding='same')(up_p3)
     up_p3 = layers.BatchNormalization(axis=-1)(up_p3)  # tfa.layers.GroupNormalization()
     up_p3 = layers.Activation("relu")(up_p3)
-    up_p3 = layers.UpSampling2D((2, 2))(up_p3)
+    up_p3 = layers.UpSampling2D((2, 2), interpolation="bilinear")(up_p3)
 
 
 
@@ -95,7 +95,7 @@ def fpn(encoder, num_regions, l1_skip_conn=True, input_height=224,
     up_p2 = layers.Conv2D(128, (3, 3), padding='same')(P2)
     up_p2 = layers.BatchNormalization(axis=-1)(up_p2)  # tfa.layers.GroupNormalization()
     up_p2 = layers.Activation("relu")(up_p2)
-    up_p2 = layers.UpSampling2D((2, 2))(up_p2)
+    up_p2 = layers.UpSampling2D((2, 2), interpolation="bilinear")(up_p2)
 
     # P2
     up_p1 = layers.Conv2D(128, (3, 3), padding='same')(P1)
@@ -105,36 +105,20 @@ def fpn(encoder, num_regions, l1_skip_conn=True, input_height=224,
 
     # SUM ELEMENT WISE
     y = layers.Add()([up_p4, up_p3, up_p2, up_p1])
-    y = layers.UpSampling2D((4, 4))(up_p3)
+    y = layers.BatchNormalization(axis=-1)(y)  # tfa.layers.GroupNormalization()
+    y = layers.UpSampling2D((4, 4), interpolation="bilinear")(y)
+    y = layers.Conv2D(64, (3, 3), padding='same')(y)
 
+    y = layers.BatchNormalization(axis=-1)(y)  # tfa.layers.GroupNormalization()
+    y = layers.Activation("relu")(y)
 
-
-
-
-
-    # 56x56 to 112x112
-    x = layers.UpSampling2D((2, 2))(x)
-    f0_prime = layers.Conv2D(256, (1,1))(f0)
-    x = layers.Add()([x, f0_prime])
-    x = layers.Conv2D(256, (3, 3), padding='same')(x)
-    x = layers.BatchNormalization(axis=-1)(x)
-    x = layers.Activation("relu")(x)
-
-
-    # 112x112 to 224x224
-    x = layers.UpSampling2D((2, 2))(x)
-    x = layers.Conv2D(64, (3, 3), padding='same')(x)
-    # x = layers.BatchNormalization(axis=-1)(x)
-    x = layers.Activation("relu")(x)
-
-  
     # REGRESSION
-    output_reg = layers.Conv2D(3, (3, 3), padding='same')(x)
+    output_reg = layers.Conv2D(3, (3, 3), padding='same')(y)
     output_masked_reg = layers.Multiply()([output_reg, mask])
 
     
     # CLASSIFICATION
-    x_clas = layers.Conv2D(num_regions, (3, 3), padding='same')(x)
+    x_clas = layers.Conv2D(num_regions, (3, 3), padding='same')(y)
     output_clas = keras.activations.softmax(x_clas, axis=-1)
     
     

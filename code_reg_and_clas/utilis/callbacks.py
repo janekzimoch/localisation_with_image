@@ -214,32 +214,29 @@ class pixelwise_MSE(keras.callbacks.Callback):
             global_coords = np.reshape(global_coords, (224,224,3))
             global_coords = global_coords * self.mask[0]
             oracle = self.oracle_global_coords[0] * self.mask[0]
+            errors_squared = np.square(oracle - global_coords)
             euc_dist = np.mean(np.square(oracle - global_coords), axis=-1)
-            print('MSE: ', np.mean(euc_dist))
+            mean_euc_dist = np.mean(euc_dist)
+            print('MSE: ', mean_euc_dist)
+            
+            # 5. compute MSE 90th percentile
+            percentile_90th = np.percentile(errors_squared, 90)
+            euc_dist_perc_90th = np.mean(errors_squared[errors_squared < percentile_90th])
+            mean_euc_dist_90th = np.mean(euc_dist_perc_90th)
+            print('MSE 90th percentile: ', mean_euc_dist_90th)
+            
+            
 
-            # 5. save to tensorboard
-            # items_to_write={
-            #     "global_MSE": np.mean(euc_dist)
-            # }
-
+            # 6. save to tensorboard
             with self.writer.as_default():
-                tf.summary.scalar('MSE', np.mean(euc_dist), step=self.step_number, description=None)
+                tf.summary.scalar('MSE', mean_euc_dist, step=self.step_number, description=None)
+                tf.summary.scalar('MSE_90th_perc', mean_euc_dist_90th, step=self.step_number, description=None)
             self.step_number += 1
 
-            # writer = self.tensorboard_cb.writer
-            # for name, value in items_to_write.items():
-            #     summary = tf.summary.Summary()
-            #     summary_value = summary.value.add()
-            #     summary_value.simple_value = value
-            #     summary_value.tag = name
-            #     writer.add_summary(summary, self.step_number)
-            #     writer.flush()
-            # self.step_number += 1
             
-            
+            # 6. plot for visualisation
             if(epoch%self.visualisation_frequency == 0):
                 
-                # 5. plot for visualisation
                 fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4, figsize=(16,3))
                 region_centers = self.M[pred_regions]
                 max_ = max(self.oracle_global_coords[0].max(), global_coords.max())
@@ -257,6 +254,142 @@ class pixelwise_MSE(keras.callbacks.Callback):
                 ax3.imshow(region_centers)
                 
                 im4 = ax4.imshow(euc_dist)
+                ax4.set_title("Euclidean distance")
+                
+                divider = make_axes_locatable(ax4)
+                cax = divider.append_axes('right', size='5%', pad=0.1)
+                cbar = fig.colorbar(im4, cax=cax)
+
+                plt.show()
+
+
+
+class pixelwise_MSE_agregate(keras.callbacks.Callback):
+    def __init__(self, generator, datapoint_name, metric_frequency, visualisation_frequency, exp_dir, exp_name, train, start_row=[0], start_col=[0]):
+        super(pixelwise_MSE_agregate, self).__init__()
+        
+        # store data to print at the end
+        self.MSE = []
+        self.MSE_90th = []
+
+        # tensorboard writer
+        self.writer = tf.summary.create_file_writer(exp_dir + 'logs/' + exp_name + "_MSE")
+        self.step_number = 0
+        
+        # get unwhitenning params
+        data = self.load_data(datapoint_name, start_row, start_col)
+        self.W_inv = data['W_inv']
+        self.M = data['M']
+        self.std = data['std']
+        
+        self.generator = generator
+        self.visualisation_frequency = visualisation_frequency
+        self.metric_frequency = metric_frequency
+        if train:
+            self.type = "_train"
+        else:
+            self.type = '_val'
+
+    def get_metric(self):
+        return self.MSE, self.MSE_90th
+        
+    def load_data(self, data_filename, start_row, start_col):
+        data = np.load(data_filename)
+
+        W_inv = data['W_inv']
+        M = data['M']
+        std = data['std']
+        
+        return {'W_inv': W_inv, 'M': M, 'std': std}
+    
+        
+    def on_epoch_begin(self, epoch, logs=None):
+        if(epoch%self.metric_frequency == 0):
+
+
+            # get data
+            [images, mask], labels = self.generator.__getitem__(0)
+            self.generator.on_epoch_end() # shuffle order
+
+            batch_size = len(labels)
+
+            output = self.model.predict([images, mask])
+            global_coords = np.zeros((batch_size*224*224,3))
+            oracle_global_coords = np.zeros((batch_size*224*224,3))
+            
+                       
+          
+            # 2. unwhitten local coordinates - pred
+            pred_local_coords = np.reshape(output[:,:,:,:3], (-1,3))
+            pred_regions = np.argmax(output[:,:,:,3:], axis=-1)
+            pred_regions = np.reshape(pred_regions, (-1)).astype(int)
+
+            for region in np.unique(pred_regions):
+                region_coords = pred_local_coords[pred_regions == region]
+                unwhite_loc_coords = np.dot(region_coords * self.std[region] , self.W_inv[region]) + self.M[region]
+                
+                global_coords[pred_regions == region] = unwhite_loc_coords
+
+
+            # 2. unwhitten local coordinates - GT oracle
+            oracle_local_coords = np.reshape(labels[:,:,:,:3], (-1,3))
+            oracle_regions = np.reshape(labels[:,:,:,3:], (-1)).astype(int)
+
+            for region in np.unique(oracle_regions):
+                region_coords = oracle_local_coords[oracle_regions == region]
+                unwhite_loc_coords = np.dot(region_coords * self.std[region] , self.W_inv[region]) + self.M[region]
+                
+                oracle_global_coords[oracle_regions == region] = unwhite_loc_coords
+            
+           
+            # 4. compute MSE
+            global_coords = np.reshape(global_coords, (batch_size,224,224,3))
+            oracle_global_coords = np.reshape(oracle_global_coords, (batch_size,224,224,3))
+            global_coords = global_coords * mask
+            oracle = oracle_global_coords * mask
+            errors_squared = np.square(oracle - global_coords)
+            euc_dist = np.mean(np.square(oracle - global_coords), axis=-1)
+            mean_euc_dist = np.mean(euc_dist)
+            print(f'MSE{self.type}: ', mean_euc_dist)
+            self.MSE.append(mean_euc_dist)
+            
+            # 5. compute MSE 90th percentile
+            percentile_90th = np.percentile(errors_squared, 90)
+            euc_dist_perc_90th = np.mean(errors_squared[errors_squared < percentile_90th])
+            mean_euc_dist_90th = np.mean(euc_dist_perc_90th)
+            print(f'MSE{self.type} 90th percentile: ', mean_euc_dist_90th)
+            self.MSE_90th.append(mean_euc_dist_90th)
+            
+            
+
+            # 6. save to tensorboard
+            with self.writer.as_default():
+                tf.summary.scalar('MSE' + self.type, mean_euc_dist, step=self.step_number, description=None)
+                tf.summary.scalar('MSE_90th_perc' + self.type, mean_euc_dist_90th, step=self.step_number, description=None)
+            self.step_number += 1
+
+            
+            # 6. plot for visualisation
+            if(epoch%self.visualisation_frequency == 0):
+                
+                fig, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4, figsize=(16,3))
+                region_centers = self.M[pred_regions]
+                max_ = max(oracle_global_coords[0].max(), global_coords[0].max())
+                min_ = min(oracle_global_coords[0].min(), global_coords[0].min())
+                
+                oracle_coords_norm = (oracle_global_coords[0] - min_) / (max_ - min_)
+                ax1.imshow(oracle_coords_norm)
+                ax1.set_title("Ground truth - global scene coords")
+                
+                pred_coords_norm = (global_coords[0] - min_) / (max_ - min_)
+                ax2.imshow(pred_coords_norm)
+                ax2.set_title("Pred - global scene coords")
+                
+                region_centers = np.reshape(region_centers, (batch_size, 224,224,3))
+                ax3.imshow(region_centers[0])
+                ax3.set_title("Region Centers")
+                
+                im4 = ax4.imshow(euc_dist[0])
                 ax4.set_title("Euclidean distance")
                 
                 divider = make_axes_locatable(ax4)
