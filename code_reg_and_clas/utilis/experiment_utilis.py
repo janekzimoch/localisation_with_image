@@ -98,7 +98,7 @@ def get_data(experiment_full_name, dataset_size,
 
 def get_callbacks(train_gen, val_gen,**kwargs):
     callbacks = []
-    file_name = "/data/cornucopia/jz522/localisation_project/DS_003_JDB-Full/coordinates_256_512_complete_working_141_classes/0001_rendered.png_config.npz"
+    file_name = kwargs['data_dir'] + "0001_rendered.png_config.npz"
 
     if kwargs['tensorboard'] == True:
         logdir = kwargs['experiment_dir'] + "logs/" + kwargs['experiment_name']
@@ -114,11 +114,11 @@ def get_callbacks(train_gen, val_gen,**kwargs):
 
 
     if kwargs['pixelwise_MSE_train'] == True:
-        global_coord_mse_train_callback = pixelwise_MSE_agregate(train_gen,file_name, 1, 20, kwargs['experiment_dir'], kwargs['experiment_name'], train=True)
+        global_coord_mse_train_callback = pixelwise_MSE_agregate(train_gen,file_name, 1, 20, kwargs['experiment_dir'], kwargs['experiment_name'], kwargs['whitenning_type'], train=True)
         callbacks.append(global_coord_mse_train_callback)
 
     if kwargs['pixelwise_MSE_val'] == True:        
-        global_coord_mse_val_callback = pixelwise_MSE_agregate(val_gen, file_name, 1, 20, kwargs['experiment_dir'], kwargs['experiment_name'], train=False)
+        global_coord_mse_val_callback = pixelwise_MSE_agregate(val_gen, file_name, 1, 20, kwargs['experiment_dir'], kwargs['experiment_name'], kwargs['whitenning_type'], train=False)
         callbacks.append(global_coord_mse_val_callback)
 
 

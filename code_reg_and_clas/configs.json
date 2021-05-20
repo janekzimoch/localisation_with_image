@@ -9,7 +9,8 @@
         "tensorboard": true,
         "train_visualisation": true,
         "val_visualisation": true,
-        "vis_frequency": 20
+        "vis_frequency": 20,
+        "whitenning_type": "simple"
     },
     "compile_configs": {
         "loss": "mse"
@@ -26,7 +27,7 @@
         "single_image": false
     },
     "data_partition": {
-        "data_dir": "/data/cornucopia/jz522/localisation_project/DS_003_JDB-Full/coordinates_256_512_complete_working_141_classes/",
+        "data_dir": "/data/cornucopia/jz522/localisation_project/DS_003_JDB-Full/coordinates_256_512__141_classes__simple_whitening/",
         "dataset_size": 370,
         "val_split": 0.1
     },
@@ -38,7 +39,7 @@
             "/device:GPU:3"
         ],
         "experiment_dir": "/data/cornucopia/jz522/experiments/",
-        "experiment_name": "FPN_resnet_bs16_LR5e-4_w11_CONTINUED",
+        "experiment_name": "FPN_resnet_bs16_LR5e-4_w1-1_simple_whitenning",
         "multiple_GPU": false
     },
     "fit_model": {
@@ -47,9 +48,9 @@
     },
     "model_configs": {
         "checkpoint_dir": "/data/cornucopia/jz522/experiments/2021-05-17/FPN_resnet_bs16_LR5e-4_w11_CONTINUED_2021-05-17_00:25:31/model_checkpoint",
-        "learning_rate": 0.0001,
+        "learning_rate": 0.0005,
         "num_regions": 141,
-        "run_from_checkpoint": true,
+        "run_from_checkpoint": false,
         "weights": [
             1,
             1

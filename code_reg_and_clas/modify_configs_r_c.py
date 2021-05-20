@@ -2,14 +2,14 @@ import json
 
 configs = {
     'experiment_info': {
-        'experiment_name': "FPN_resnet_bs16_LR5e-4_w11_CONTINUED", #"fpn_resnet__bs16__LR5e-4__w10",
+        'experiment_name': "FPN_resnet_bs16_LR5e-4_w1-1_simple_whitenning",
         'experiment_dir': '/data/cornucopia/jz522/experiments/',
         'multiple_GPU': False,
         'GPUs': ['/device:GPU:0', '/device:GPU:1', '/device:GPU:2', '/device:GPU:3']
     },
     'data_partition': {
         'dataset_size': 370,
-        'data_dir': "/data/cornucopia/jz522/localisation_project/DS_003_JDB-Full/coordinates_256_512_complete_working_141_classes/",
+        'data_dir': "/data/cornucopia/jz522/localisation_project/DS_003_JDB-Full/coordinates_256_512__141_classes__simple_whitening/",
         'val_split': 0.1
     },
 
@@ -23,6 +23,7 @@ configs = {
         'tensorboard': True,
         'model_checkpoint': True,
         'garbage_cleaner': True,
+        'whitenning_type': 'simple',
         "vis_frequency": 20
     },
 
@@ -40,10 +41,10 @@ configs = {
     },
 
     'model_configs': {
-        'learning_rate': 1e-4,
+        'learning_rate': 5e-4,
         'weights': [1, 1],
         'num_regions': 141,
-        'run_from_checkpoint': True,
+        'run_from_checkpoint': False,
         'checkpoint_dir': "/data/cornucopia/jz522/experiments/2021-05-17/FPN_resnet_bs16_LR5e-4_w11_CONTINUED_2021-05-17_00:25:31/model_checkpoint"
     },
 

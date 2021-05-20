@@ -40,8 +40,7 @@ def run_setup(configs):
     # setup callbacks
     print("Getting callbacks ...")
     callbacks, MSE_train, MSE_val = get_callbacks(train_generator, validation_generator,
-                                **configs['callbacks'], **configs['experiment_info'])
-    # , MSE_train, MSE_val 
+                                **configs['callbacks'], **configs['experiment_info'], **configs['data_partition'])
     
     # setup model
     print("Setting up model ...")

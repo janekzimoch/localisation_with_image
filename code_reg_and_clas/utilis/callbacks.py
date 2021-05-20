@@ -265,7 +265,7 @@ class pixelwise_MSE(keras.callbacks.Callback):
 
 
 class pixelwise_MSE_agregate(keras.callbacks.Callback):
-    def __init__(self, generator, datapoint_name, metric_frequency, visualisation_frequency, exp_dir, exp_name, train, start_row=[0], start_col=[0]):
+    def __init__(self, generator, datapoint_name, metric_frequency, visualisation_frequency, exp_dir, exp_name, whitenning_type, train, start_row=[0], start_col=[0]):
         super(pixelwise_MSE_agregate, self).__init__()
         
         # store data to print at the end
@@ -278,10 +278,18 @@ class pixelwise_MSE_agregate(keras.callbacks.Callback):
         
         # get unwhitenning params
         data = self.load_data(datapoint_name, start_row, start_col)
-        self.W_inv = data['W_inv']
-        self.M = data['M']
-        self.std = data['std']
+        self.whitenning_type = whitenning_type
+        if self.whitenning_type == 'simple':
+            self.W_inv = None
+            self.M = data['mean_vec']
+            self.std = data['std_vec']
+
+        elif self.whitenning_type == 'W_matrix':
+            self.W_inv = data['W_inv']
+            self.M = data['M']
+            self.std = data['std']
         
+        # other
         self.generator = generator
         self.visualisation_frequency = visualisation_frequency
         self.metric_frequency = metric_frequency
@@ -295,12 +303,8 @@ class pixelwise_MSE_agregate(keras.callbacks.Callback):
         
     def load_data(self, data_filename, start_row, start_col):
         data = np.load(data_filename)
-
-        W_inv = data['W_inv']
-        M = data['M']
-        std = data['std']
         
-        return {'W_inv': W_inv, 'M': M, 'std': std}
+        return data
     
         
     def on_epoch_begin(self, epoch, logs=None):
@@ -324,11 +328,18 @@ class pixelwise_MSE_agregate(keras.callbacks.Callback):
             pred_regions = np.argmax(output[:,:,:,3:], axis=-1)
             pred_regions = np.reshape(pred_regions, (-1)).astype(int)
 
+
             for region in np.unique(pred_regions):
                 region_coords = pred_local_coords[pred_regions == region]
-                unwhite_loc_coords = np.dot(region_coords * self.std[region] , self.W_inv[region]) + self.M[region]
+                
+                if self.whitenning_type == 'simple':
+                    unwhite_loc_coords = (region_coords * self.std[region]) + self.M[region]
+
+                elif self.whitenning_type == 'W_matrix':
+                    unwhite_loc_coords = np.dot(region_coords * self.std[region] , self.W_inv[region]) + self.M[region]
                 
                 global_coords[pred_regions == region] = unwhite_loc_coords
+
 
 
             # 2. unwhitten local coordinates - GT oracle
@@ -337,9 +348,15 @@ class pixelwise_MSE_agregate(keras.callbacks.Callback):
 
             for region in np.unique(oracle_regions):
                 region_coords = oracle_local_coords[oracle_regions == region]
-                unwhite_loc_coords = np.dot(region_coords * self.std[region] , self.W_inv[region]) + self.M[region]
+
+                if self.whitenning_type == 'simple':
+                    unwhite_loc_coords = (region_coords * self.std[region]) + self.M[region]
+
+                elif self.whitenning_type == 'W_matrix':
+                    unwhite_loc_coords = np.dot(region_coords * self.std[region] , self.W_inv[region]) + self.M[region]
                 
                 oracle_global_coords[oracle_regions == region] = unwhite_loc_coords
+
             
            
             # 4. compute MSE
