@@ -86,10 +86,13 @@ def stich(data):
     return stiched_data
 
 
-def get_color_map(regions, colormap):
+def get_color_map(regions, colormap=None):
+    if colormap == None:
+        colromap_dir = "/data/cornucopia/jz522/experiments/model_visualisation/colormap.npy"
+        colormap = np.load(colromap_dir)
 
     reg_flat = np.reshape(regions, (-1)).astype(int)
     colored_regions_flat = colormap[reg_flat]
-    colored_regions = np.reshape(colored_regions_flat, regions.shape)
+    colored_regions = np.reshape(colored_regions_flat, (regions.shape[0], regions.shape[1], 3))
     return colored_regions
 
