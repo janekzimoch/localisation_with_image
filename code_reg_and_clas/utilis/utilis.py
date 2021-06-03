@@ -90,6 +90,7 @@ def get_color_map(regions, colormap=None):
     if colormap == None:
         colromap_dir = "/data/cornucopia/jz522/experiments/model_visualisation/colormap.npy"
         colormap = np.load(colromap_dir)
+    print(colormap.shape)
 
     reg_flat = np.reshape(regions, (-1)).astype(int)
     colored_regions_flat = colormap[reg_flat]
