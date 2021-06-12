@@ -1,5 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import tensorflow as tf
+from tensorflow_probability import distributions as tfd
+
 
 
 def generate_dataset(dataset_size, num_modes, output_dim, num_patterns, noise):
@@ -85,3 +88,24 @@ def visualise_mode_overlap(model, x_test, y_test, pattern_ids_test):
 
     # PLOT PREDICTED MODES
     plt.show()
+
+
+
+def get_mixture_dist(logits, num_components, numpy=True):
+    """
+    This function converts logits into a categorical probability distribution
+    there are 'num_components' elements in logits array. 
+    Note: logits has to be 1D vector (i.e. you have to get categorical distribution for each datapoint seperately)  
+    """
+    dist = tfd.Categorical(logits=logits)
+    n = 1e4
+    empirical_prob = tf.cast(
+        tf.histogram_fixed_width(
+          dist.sample(int(n)),
+          [0, num_components-1],
+          nbins=num_components),
+        dtype=tf.float32) / n
+    if numpy:
+        return empirical_prob.numpy()
+    else:
+        return empirical_prob

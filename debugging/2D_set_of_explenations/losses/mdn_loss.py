@@ -2,7 +2,7 @@ import tensorflow as tf
 from tensorflow_probability import distributions as tfd
 
 
-def mdn_loss(num_comp, output_shape=3, fixed_variance=True):
+def get_mdn_loss(num_comp, output_shape=3, fixed_variance=True):
     """ 
     As implemented here: https://github.com/cpmpercussion/keras-mdn-layer/blob/master/mdn/__init__.py
     get MDN loss function defined by a GMM which consists of 'num_components' gaussian mixtures 
@@ -12,7 +12,7 @@ def mdn_loss(num_comp, output_shape=3, fixed_variance=True):
     output_dim = output_shape
     
     
-    def get_mdn_loss(y_true, y_pred):
+    def mdn_loss(y_true, y_pred):
         # Reshape inputs in case this is used in a TimeDistribued layer
         y_pred = tf.reshape(y_pred, [-1, (2 * num_mixes * output_dim) + num_mixes], name='reshape_ypreds')
         y_true = tf.reshape(y_true, [-1, output_dim], name='reshape_ytrue')
@@ -40,7 +40,7 @@ def mdn_loss(num_comp, output_shape=3, fixed_variance=True):
         loss = tf.reduce_mean(loss)
         return loss
     
-    return get_mdn_loss
+    return mdn_loss
 
 
 # THIS IS MY IMPLEMENTATION OF MDN    -   IT ALSO WORKS

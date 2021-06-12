@@ -1,5 +1,7 @@
 import tensorflow as tf
 
+from general_utilis import get_mixture_dist
+
 
 # note metrics can only output scalar. you may want to use a callback or something so that you get more flexibility
 def GMM_Metrics(num_comp, output_shape):

@@ -2,27 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import norm
 import tensorflow as tf
-from tensorflow_probability import distributions as tfd
 
-def get_mixture_dist(logits, num_components, numpy=True):
-    """
-    This function converts logits into a categorical probability distribution
-    there are 'num_components' elements in logits array. 
-    Note: logits has to be 1D vector (i.e. you have to get categorical distribution for each datapoint seperately)  
-    """
-    dist = tfd.Categorical(logits=logits)
-    n = 1e4
-    empirical_prob = tf.cast(
-        tf.histogram_fixed_width(
-          dist.sample(int(n)),
-          [0, num_components-1],
-          nbins=num_components),
-        dtype=tf.float32) / n
-    if numpy:
-        return empirical_prob.numpy()
-    else:
-        return empirical_prob
-
+from general_utilis import get_mixture_dist
 
 
 def visualise_probability_for_datapoint(model, x, y, pattern_ids, num_modes, pattern_ID=0, num_points=1, ind=None, fixed_variance=True):
