@@ -20,7 +20,7 @@ def get_CE_RWTA_loss(M, eps, output_dim, fixed_variance=False):
         
         # compute
         mixtures_nll = []
-        for m_ind in range(num_comp):
+        for m_ind in range(M):
             mixture_y_pred = tf.concat([out_mu[:, m_ind*output_dim:(m_ind+1)*output_dim], out_sigma[:, m_ind*output_dim:(m_ind+1)*output_dim]], -1)
             nll = multivariate_NLL(y_true, mixture_y_pred)
             nll = tf.expand_dims(nll, -1)
@@ -29,7 +29,7 @@ def get_CE_RWTA_loss(M, eps, output_dim, fixed_variance=False):
         # one hot encode mixtures_nll, where min(NLL) = 1, else =0
         mixtures_combined = tf.concat(mixtures_nll, 1)
         # i needed this hacky dimension expansion to use tf.equal
-        mixtures_comb_min = tf.concat([tf.expand_dims( tf.reduce_min(mixtures_combined, axis=1), -1)] * num_comp, 1)
+        mixtures_comb_min = tf.concat([tf.expand_dims( tf.reduce_min(mixtures_combined, axis=1), -1)] * M, 1)
         NLL_one_hot = tf.equal(mixtures_comb_min, mixtures_combined)
         
     

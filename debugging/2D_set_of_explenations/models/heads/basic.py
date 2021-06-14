@@ -2,7 +2,7 @@ from tensorflow.keras import layers
 from tensorflow.keras.models import Model
 
 
-def basic_localisation_model(encoder, num_heads=1, input_shape=(224,224,1)):
+def basic_model(encoder, num_heads=1, output_dim=1, input_shape=(224,224,1)):
     
     image_input = layers.Input(shape=input_shape)
     image_input, levels = encoder(image_input)
@@ -14,13 +14,13 @@ def basic_localisation_model(encoder, num_heads=1, input_shape=(224,224,1)):
         heads = []
         for i in range(num_heads):
             h = layers.Dense(64, activation='relu', name=f'fc{i}_0')(head_input)
-            output = layers.Dense(3, name=f'fc{i}')(h)
+            output = layers.Dense(output_dim*num_heads, name=f'fc{i}')(h)
             heads.append(output)
 
         output = layers.Concatenate(axis=-1)(heads)
     else:
         h = layers.Dense(64, activation='relu', name='fc0')(head_input)
-        output = layers.Dense(3, name='fc1')(h)
+        output = layers.Dense(output_dim*num_heads, name='fc1')(h)
 
     
     model = Model(inputs=image_input, outputs=output) 

@@ -4,11 +4,10 @@ import tensorflow as tf
 import keras.backend as K
 
 from losses.mdn_loss import get_mdn_loss
-from losses.rwta_loss import get_rwta_loss
 
 
 def get_MDN_RWTA_loss(num_comp, eps, output_shape, fixed_variance=False):
-    mdn_loss_function = get_mdn_loss(num_comp, output_shape=output_shape, fixed_variance=fixed_variance)
+    mdn_loss_function = get_mdn_loss(num_comp, eps, output_shape=output_shape, fixed_variance=fixed_variance)
     nll_rwta_loss_function = get_RWTA_loss(num_comp, eps, output_shape=output_shape, fixed_variance=fixed_variance)
     
     def get_combined_loss(y_true, y_pred):
@@ -39,7 +38,7 @@ def multivariate_NLL(y_true, y_pred):
     
     log_likelihood = mse+sigma_trace+log2pi
 
-    return K.mean(-log_likelihood)
+    return -log_likelihood
 
 
 def get_RWTA_loss(M, eps, output_shape, fixed_variance=False):
@@ -71,10 +70,12 @@ def get_RWTA_loss(M, eps, output_shape, fixed_variance=False):
         for m_ind in range(M):
             mixture_y_pred = tf.concat([out_mu[:, m_ind*output_dim:(m_ind+1)*output_dim], out_sigma[:, m_ind*output_dim:(m_ind+1)*output_dim]], -1)
             nll = multivariate_NLL(y_true, mixture_y_pred)
+            nll = tf.expand_dims(nll, 1)
             mixtures_nll.append(nll)
         
+        mixtures_combined = tf.concat(mixtures_nll, 1)
         # RWTA
-        loss = (1-eps) * (M-1/M) * tf.math.reduce_min(mixtures_nll) + (eps/M) * tf.math.reduce_sum(mixtures_nll)
-        return loss
+        loss = (1-eps) * (M-1/M) * tf.math.reduce_min(mixtures_combined, axis=1) + (eps/M) * tf.math.reduce_sum(mixtures_combined, axis=1)
+        return tf.reduce_mean(loss)
     
     return RWTA_loss_for_mdn

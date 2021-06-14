@@ -6,7 +6,7 @@ import tensorflow as tf
 from general_utilis import get_mixture_dist
 
 
-def visualise_probability_for_datapoint(model, x, y, pattern_ids, num_modes, pattern_ID=0, num_points=1, ind=None, fixed_variance=True):
+def visualise_probability_for_datapoint(models_list, x, y, pattern_ids, num_modes, pattern_ID=0, num_points=1, ind=None, fixed_variance=True):
     """
     This function visualises all modes ('y' values) for pattern associated with 'pattern_ID'.
     It will then plot the probability distribution outputed by the MDN. 
@@ -18,7 +18,7 @@ def visualise_probability_for_datapoint(model, x, y, pattern_ids, num_modes, pat
     num_outputs = y.shape[-1]
     
     for i in range(num_points):
-        plt.figure(figsize=(16,2))
+        plt.figure(figsize=(16,3))
 
         # plot probability
         y_tmp = y[p_indexes]
@@ -27,24 +27,26 @@ def visualise_probability_for_datapoint(model, x, y, pattern_ids, num_modes, pat
             random_ind = ind
         else:
             random_ind = np.random.randint(len(x_tmp))
-        y_dist = model.predict(np.expand_dims(x_tmp[random_ind], axis=0))
-        mix_comp, means, var = y_dist[0,:num_modes], y_dist[0,num_modes: (num_outputs+1)*num_modes], y_dist[0, (num_outputs+1)*num_modes:]
-        if fixed_variance:
-            var = [1]*num_modes
-        
-        # somehow need to plot a gaussian
+
+        # get points to plot distribution
         n = 1000
         y_samples = np.arange(n)
         probability = np.zeros(n)
-        gaus_mix = get_mixture_dist(mix_comp, num_modes) 
-        
-        for j in range(num_modes):
-            probability += gaus_mix[j] * norm.pdf(y_samples, loc=means[j], scale=var[j])
-        plt.plot(y_samples, probability, linewidth=0.5, color='tab:blue', label='GMM\'s p(y|img)')
+
+        for model_name, model in models_list:
+            y_dist = model.predict(np.expand_dims(x_tmp[random_ind], axis=0))
+            gaus_mix_logits, means, var = y_dist[0,:num_modes], y_dist[0,num_modes: (num_outputs+1)*num_modes], y_dist[0, (num_outputs+1)*num_modes:]
+            if fixed_variance:
+                var = [1]*num_modes
+            gaus_mix = get_mixture_dist(gaus_mix_logits, num_modes) 
+            
+            for j in range(num_modes):
+                probability += gaus_mix[j] * norm.pdf(y_samples, loc=means[j], scale=var[j])
+            plt.plot(y_samples, probability, linewidth=1.0, label=f'p(y|img) - {model_name}')
         
         # plot ground truth
-        plt.scatter(y_tmp[random_ind], [0], color='tab:green', linewidth=10, alpha=0.5, label='sample GT')
-        plt.scatter(gt_modes, [0] * len(gt_modes), linewidth=3, alpha=0.5, color='tab:red', label='GT modes')
+        plt.scatter(y_tmp[random_ind], [0], color='green', linewidth=10, alpha=0.5, label='sample GT')
+        plt.scatter(gt_modes, [0] * len(gt_modes), linewidth=3, alpha=0.5, color='red', label='GT modes')
         
         plt.ylabel('p( y | img)')
         plt.xlabel('y (distance)')

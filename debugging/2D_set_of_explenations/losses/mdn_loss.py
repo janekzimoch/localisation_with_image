@@ -2,11 +2,13 @@ import tensorflow as tf
 from tensorflow_probability import distributions as tfd
 
 
-def get_mdn_loss(num_comp, output_shape=3, fixed_variance=True):
+def get_mdn_loss(num_comp, eps, output_shape=3, fixed_variance=True):
     """ 
     As implemented here: https://github.com/cpmpercussion/keras-mdn-layer/blob/master/mdn/__init__.py
     get MDN loss function defined by a GMM which consists of 'num_components' gaussian mixtures 
     and provides distribution over 'output_dim' variables 
+
+    Note: eps - is not used - we just pass it for convenience of testing multiple losses
     """
     num_mixes = num_comp
     output_dim = output_shape
